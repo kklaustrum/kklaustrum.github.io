@@ -14,13 +14,28 @@ import Html.Events exposing (onClick)
 
 import Pages exposing (PageData)
 import Messages exposing (Msg(..))
+import Locale exposing (Locale)
+
+import UiClasses exposing
+    ( bodyCls
+    , novelContainerCls
+    , pageTitleCls
+    , paragraphCls
+    , pageContentCls
+    , loadingTitleCls
+    , errorTitleCls
+    , choicesContainerCls
+    , choiceBtnCls
+    , backToHomeBtnCls
+    , pulseAnimationCls
+    )
 
 -- ------------------------------------------------------------------
--- «обёртка» для контейнера
+-- Обёртка‑контейнер
 -- ------------------------------------------------------------------
 novelContainer : List (Html msg) -> Html msg
 novelContainer children =
-    div [ class "novel-container" ] children
+    div [ class novelContainerCls ] children
 
 -- ------------------------------------------------------------------
 -- UI‑компоненты
@@ -29,55 +44,49 @@ choiceButton : String -> String -> Html Msg
 choiceButton label pageId =
     button
         [ onClick (GoToPage pageId)
-        , class "choice-btn"
+        , class choiceBtnCls
         ]
         [ text label ]
 
-{-| Список вариантов‑выбора.
-    `choices` – список кортежей `(label, pageId)`.
--}
 viewChoices : List ( String, String ) -> Html Msg
-viewChoices choices =
-    div [ class "choices" ]
-        (List.map
-            (\( label, pageId ) -> choiceButton label pageId)
-            choices
-        )
+viewChoices choicePairs =
+    div [ class choicesContainerCls ]
+        (List.map (\( lbl, pid ) -> choiceButton lbl pid) choicePairs)
 
-{-| Превращение списка строк‑абзацев в список `p`‑элементов.
-    Возвращение **List (Html msg)**, а не один `Html`.
--}
 viewParagraphs : List String -> List (Html msg)
-viewParagraphs paragraphs =
-    List.map (\para -> p [ class "paragraph" ] [ text para ]) paragraphs
+viewParagraphs paras =
+    List.map (\para -> p [ class paragraphCls ] [ text para ]) paras
 
 -- ------------------------------------------------------------------
--- «страницы»
+-- Страницы
 -- ------------------------------------------------------------------
-viewPage : Dict String PageData -> String -> Html Msg
-viewPage pages currentPage =
+viewPage : Locale -> Dict String PageData -> String -> Html Msg
+viewPage locale pages currentPage =
     case Dict.get currentPage pages of
         Just pageData ->
             novelContainer
-                [ h1 [] [ text pageData.title ]
-                , div [ class "page-content" ] (viewParagraphs pageData.content)
+                [ h1 [ class pageTitleCls ] [ text pageData.title ]
+                , div [ class pageContentCls ] (viewParagraphs pageData.content)
                 , viewChoices pageData.choices
                 ]
 
         Nothing ->
             novelContainer
-                [ h1 [] [ text "Страница не найдена" ]
+                [ h1 [ class errorTitleCls ] [ text locale.pageNotFound ]
                 , p [] [ text ("ID: " ++ currentPage) ]
-                , viewChoices [ ( "На главную", "start" ) ]
+                , viewChoices [ ( locale.backToHomeLabel, "start" ) ]
                 ]
 
-viewLoading : Html msg
-viewLoading =
-    novelContainer [ h1 [] [ text "Загрузка книги…" ] ]
-
-viewError : String -> Html msg
-viewError errMsg =
+viewLoading : Locale -> Html msg
+viewLoading locale =
     novelContainer
-        [ h1 [] [ text "Ошибка" ]
+        [ h1 [ class (loadingTitleCls ++ " " ++ pulseAnimationCls) ]
+            [ text locale.loading ]
+        ]
+
+viewError : Locale -> String -> Html msg
+viewError locale errMsg =
+    novelContainer
+        [ h1 [ class errorTitleCls ] [ text locale.errorTitle ]
         , p [] [ text errMsg ]
         ]

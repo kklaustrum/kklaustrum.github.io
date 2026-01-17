@@ -5,34 +5,44 @@ import Dict exposing (Dict)
 import Http
 import Html exposing (Html)
 
--- модули
+-- modules
 import Pages exposing (PageData)
 import Decode exposing (decodeBook)
 import Views exposing (viewLoading, viewError, viewPage)
 import Messages exposing (Msg(..), goToPage, resetToStart)
+import Locale exposing (Locale, is, en, ru)
+
+defaultLocale : Locale
+defaultLocale =
+    is
 
 -- ------------------------------------------------------------------
--- Модель
+-- Model
 -- ------------------------------------------------------------------
 type Model
-    = Loading
-    | Ready { currentPage : String, pages : Dict String PageData }
-    | Error String
+    = Loading Locale
+    | Ready
+        { locale : Locale
+        , currentPage : String
+        , pages : Dict String PageData
+        }
+    | Error Locale String
 
 -- ------------------------------------------------------------------
--- Инициализация
+-- Init
 -- ------------------------------------------------------------------
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Loading
+    ( Loading defaultLocale
     , Http.get
         { url = "./book.json"
         , expect = Http.expectJson PagesLoaded decodeBook
         }
     )
 
+
 -- ------------------------------------------------------------------
--- Обновление
+-- Update
 -- ------------------------------------------------------------------
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -40,12 +50,12 @@ update msg model =
         PagesLoaded result ->
             case result of
                 Ok pagesDict ->
-                    ( Ready { currentPage = "start", pages = pagesDict }
+                    ( Ready { locale = defaultLocale, currentPage = "start", pages = pagesDict }
                     , Cmd.none
                     )
 
                 Err err ->
-                    ( Error (httpErrorToString err), Cmd.none )
+                    ( Error defaultLocale (httpErrorToString err), Cmd.none )
 
         GoToPage pageId ->
             case model of
@@ -82,29 +92,29 @@ httpErrorToString err =
             "Cannot parse body: " ++ b
 
 -- ------------------------------------------------------------------
--- view | роутинг | whatever
+-- View routing
 -- ------------------------------------------------------------------
 view : Model -> Html Msg
 view model =
     case model of
-        Loading ->
-            viewLoading
+        Loading locale ->
+            viewLoading locale
 
-        Ready { currentPage, pages } ->
-            viewPage pages currentPage
+        Ready { locale, currentPage, pages } ->
+            viewPage locale pages currentPage
 
-        Error errMsg ->
-            viewError errMsg
+        Error locale errMsg ->
+            viewError locale errMsg
 
 -- ------------------------------------------------------------------
--- Подписки
+-- Subscriptions
 -- ------------------------------------------------------------------
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.none
 
 -- ------------------------------------------------------------------
--- Точка входа
+-- Entry point
 -- ------------------------------------------------------------------
 main : Program () Model Msg
 main =
