@@ -5,8 +5,6 @@ import Dict exposing (Dict)
 import Html exposing (Html)
 import String
 
-import Pages exposing (PageData)
-import Decode exposing (decodeBook)
 import Views exposing (viewLoading, viewError, viewPage)
 import Messages exposing (Msg(..), goToPage, resetToStart)
 import Locale exposing (Locale)

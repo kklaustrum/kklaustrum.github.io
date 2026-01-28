@@ -12,10 +12,9 @@ import Html exposing (Html, button, div, h1, p, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 
-import Pages exposing (PageData)
+import Veil exposing (Page)
 import Messages exposing (Msg(..))
 import Locale exposing (Locale)
-import Veil exposing (Page)
 
 import UiClasses exposing
     ( bodyCls
@@ -64,11 +63,11 @@ viewParagraphs paras =
 viewPage : Locale -> Dict String Page -> String -> Html Msg
 viewPage locale pages currentPage =
     case Dict.get currentPage pages of
-        Just pageData ->
+        Just page ->
             novelContainer
-                [ h1 [ class pageTitleCls ] [ text pageData.title ]
-                , div [ class pageContentCls ] (viewParagraphs pageData.content)
-                , viewChoices pageData.choices
+                [ h1 [ class pageTitleCls ] [ text page.title ]
+                , div [ class pageContentCls ] (viewParagraphs page.content)
+                , viewChoices page.choices
                 ]
 
         Nothing ->
