@@ -2,19 +2,17 @@ module Main exposing (main)
 
 import Browser
 import Dict exposing (Dict)
-import Http
 import Html exposing (Html)
+import String
 
--- modules
 import Pages exposing (PageData)
 import Decode exposing (decodeBook)
 import Views exposing (viewLoading, viewError, viewPage)
 import Messages exposing (Msg(..), goToPage, resetToStart)
-import Locale exposing (Locale, is, en, ru)
-
-defaultLocale : Locale
-defaultLocale =
-    is
+import Locale exposing (Locale)
+import HttpError exposing (httpErrorToString)
+import Veil exposing (loadContent, Page, Book, pageset, ResourceError(..))
+import Utils exposing (defaultConfig, bookUrl)
 
 -- ------------------------------------------------------------------
 -- Model
@@ -24,22 +22,35 @@ type Model
     | Ready
         { locale : Locale
         , currentPage : String
-        , pages : Dict String PageData
+        , pageset : Dict String Page
         }
     | Error Locale String
+
+-- ------------------------------------------------------------------
+-- Helpers
+-- ------------------------------------------------------------------
+currentLocale : Model -> Locale
+currentLocale model =
+    case model of
+        Loading loc -> loc
+        Ready { locale } -> locale
+        Error loc _ -> loc
+
+resourceErrorToString : Locale -> ResourceError -> String
+resourceErrorToString locale (HttpError httpErr) =
+    httpErrorToString locale httpErr
 
 -- ------------------------------------------------------------------
 -- Init
 -- ------------------------------------------------------------------
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( Loading defaultLocale
-    , Http.get
-        { url = "./book.json"
-        , expect = Http.expectJson PagesLoaded decodeBook
-        }
+    let
+        cfg = defaultConfig
+    in
+    ( Loading cfg.defaultLocale
+    , loadContent (bookUrl cfg) ContentLoaded
     )
-
 
 -- ------------------------------------------------------------------
 -- Update
@@ -47,15 +58,21 @@ init _ =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        PagesLoaded result ->
+        ContentLoaded result ->
             case result of
-                Ok pagesDict ->
-                    ( Ready { locale = defaultLocale, currentPage = "start", pages = pagesDict }
+                Ok book ->
+                    ( Ready { locale = defaultConfig.defaultLocale
+                           , currentPage = "start"
+                           , pageset = Veil.pageset book
+                           }
                     , Cmd.none
                     )
 
                 Err err ->
-                    ( Error defaultLocale (httpErrorToString err), Cmd.none )
+                    let
+                        errMsg = resourceErrorToString (currentLocale model) err
+                    in
+                    ( Error defaultConfig.defaultLocale errMsg, Cmd.none )
 
         GoToPage pageId ->
             case model of
@@ -73,26 +90,8 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
-httpErrorToString : Http.Error -> String
-httpErrorToString err =
-    case err of
-        Http.BadUrl u ->
-            "Bad URL: " ++ u
-
-        Http.Timeout ->
-            "Timeout"
-
-        Http.NetworkError ->
-            "Network error"
-
-        Http.BadStatus s ->
-            "Bad status: " ++ String.fromInt s
-
-        Http.BadBody b ->
-            "Cannot parse body: " ++ b
-
 -- ------------------------------------------------------------------
--- View routing
+-- View
 -- ------------------------------------------------------------------
 view : Model -> Html Msg
 view model =
@@ -100,8 +99,8 @@ view model =
         Loading locale ->
             viewLoading locale
 
-        Ready { locale, currentPage, pages } ->
-            viewPage locale pages currentPage
+        Ready { locale, currentPage, pageset } ->
+            viewPage locale pageset currentPage
 
         Error locale errMsg ->
             viewError locale errMsg

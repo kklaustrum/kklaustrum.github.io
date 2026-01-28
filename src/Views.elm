@@ -15,6 +15,7 @@ import Html.Events exposing (onClick)
 import Pages exposing (PageData)
 import Messages exposing (Msg(..))
 import Locale exposing (Locale)
+import Veil exposing (Page)
 
 import UiClasses exposing
     ( bodyCls
@@ -60,7 +61,7 @@ viewParagraphs paras =
 -- ------------------------------------------------------------------
 -- Страницы
 -- ------------------------------------------------------------------
-viewPage : Locale -> Dict String PageData -> String -> Html Msg
+viewPage : Locale -> Dict String Page -> String -> Html Msg
 viewPage locale pages currentPage =
     case Dict.get currentPage pages of
         Just pageData ->

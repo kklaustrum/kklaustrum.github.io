@@ -1,14 +1,12 @@
 module Messages exposing (Msg(..), goToPage, resetToStart)
 
-import Dict exposing (Dict)
-import Http
-import Pages exposing (PageData)
+import Veil exposing (Book, ResourceError)
 
 -- ------------------------------------------------------------------
 -- Сообщения, которыми обмениваются все части приложения
 -- ------------------------------------------------------------------
 type Msg
-    = PagesLoaded (Result Http.Error (Dict String PageData))
+    = ContentLoaded (Result ResourceError Book)
     | GoToPage String
     | ResetToStart
 
