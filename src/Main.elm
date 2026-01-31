@@ -11,6 +11,7 @@ import Locale exposing (Locale)
 import HttpError exposing (httpErrorToString)
 import Veil exposing (loadContent, Page, Book, pageset, ResourceError(..))
 import Utils exposing (defaultConfig, bookUrl)
+import World exposing (WorldState, initWorld, addVisit)
 
 -- ------------------------------------------------------------------
 -- Model
@@ -21,6 +22,7 @@ type Model
         { locale : Locale
         , currentPage : String
         , pageset : Dict String Page
+        , world : WorldState
         }
     | Error Locale String
 
@@ -62,6 +64,7 @@ update msg model =
                     ( Ready { locale = defaultConfig.defaultLocale
                            , currentPage = "start"
                            , pageset = Veil.pageset book
+                           , world = initWorld
                            }
                     , Cmd.none
                     )
@@ -75,7 +78,12 @@ update msg model =
         GoToPage pageId ->
             case model of
                 Ready data ->
-                    ( Ready { data | currentPage = pageId }, Cmd.none )
+                    let
+                        newWorld = addVisit pageId data.world
+                    in
+                    ( Ready { data | currentPage = pageId, world = newWorld }
+                    , Cmd.none
+                    )
 
                 _ ->
                     ( model, Cmd.none )
@@ -97,8 +105,8 @@ view model =
         Loading locale ->
             viewLoading locale
 
-        Ready { locale, currentPage, pageset } ->
-            viewPage locale pageset currentPage
+        Ready { locale, currentPage, pageset, world } ->
+            viewPage defaultConfig locale pageset world currentPage
 
         Error locale errMsg ->
             viewError locale errMsg

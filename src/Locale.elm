@@ -11,6 +11,8 @@ type alias Locale =
     , httpNetworkError : String
     , httpBadStatus : String
     , httpBadBody : String
+    , debugCurrentPage : String -> String -> String
+    , gameOver : String
     }
 
 is =
@@ -24,6 +26,8 @@ is =
     , httpNetworkError = "Netvilla"
     , httpBadStatus = "Ógild staða: %s"
     , httpBadBody = "Ekki hægt að lesa svar: %s"
+    , debugCurrentPage = \page count -> "Núverandi: " ++ page ++ " (heimsóknir: " ++ count ++ ")"
+    , gameOver = "Ganga í hringi. Teldu þetta leik lokinn."
     }
 
 en =
@@ -37,6 +41,8 @@ en =
     , httpNetworkError = "Network error"
     , httpBadStatus = "Bad status: %s"
     , httpBadBody = "Cannot parse body: %s"
+    , debugCurrentPage = \page count -> "Current: " ++ page ++ " (visits: " ++ count ++ ")"
+    , gameOver = "Walking in circles. Consider this game over."
     }
 
 ru =
@@ -50,4 +56,6 @@ ru =
     , httpNetworkError = "Сетевая ошибка"
     , httpBadStatus = "Неправильный статус: %s"
     , httpBadBody = "Не удалось разобрать тело: %s"
+    , debugCurrentPage = \page count -> "Текущая: " ++ page ++ " (посещений: " ++ count ++ ")"
+    , gameOver = "Ходим по кругу. Считай, что game over."
     }

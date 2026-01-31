@@ -11,6 +11,7 @@ import Dict exposing (Dict)
 import Html exposing (Html, button, div, h1, p, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
+import String exposing (fromInt)
 
 import Veil exposing (Page)
 import Messages exposing (Msg(..))
@@ -29,6 +30,9 @@ import UiClasses exposing
     , backToHomeBtnCls
     , pulseAnimationCls
     )
+
+import Utils exposing (extraInfo, gameOverInfo)
+import World exposing (WorldState, hasReachedThreshold, visitCount)
 
 -- ------------------------------------------------------------------
 -- Обёртка‑контейнер
@@ -60,21 +64,30 @@ viewParagraphs paras =
 -- ------------------------------------------------------------------
 -- Страницы
 -- ------------------------------------------------------------------
-viewPage : Locale -> Dict String Page -> String -> Html Msg
-viewPage locale pages currentPage =
+viewPage config locale pages world currentPage =
     case Dict.get currentPage pages of
         Just page ->
-            novelContainer
-                [ h1 [ class pageTitleCls ] [ text page.title ]
-                , div [ class pageContentCls ] (viewParagraphs page.content)
-                , viewChoices page.choices
-                ]
+            let
+                isGameOver = World.hasReachedThreshold currentPage world
+                content =
+                    case isGameOver of
+                        True ->
+                            extraInfo config locale world currentPage
+                                ++ gameOverInfo locale world currentPage
+                        False ->
+                            [ h1 [ class pageTitleCls ] [ text page.title ]
+                            , div [ class pageContentCls ] (viewParagraphs page.content)
+                            ]
+                            ++ extraInfo config locale world currentPage
+                            ++ [ viewChoices page.choices ]
+            in
+            novelContainer content
 
         Nothing ->
             novelContainer
                 [ h1 [ class errorTitleCls ] [ text locale.pageNotFound ]
                 , p [] [ text ("ID: " ++ currentPage) ]
-                , viewChoices [ ( locale.backToHomeLabel, "start" ) ]
+                , choiceButton locale.backToHomeLabel "start"
                 ]
 
 viewLoading : Locale -> Html msg
