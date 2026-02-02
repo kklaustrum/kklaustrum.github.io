@@ -4,6 +4,7 @@ module World exposing
     , threshold
     , addVisit
     , visitCount
+    , visitPath
     , hasReachedThreshold
     )
 
@@ -17,12 +18,14 @@ threshold =
 type alias WorldState =
     { visited : Set String
     , visitCounts : Dict String Int
+    , visitHistory : List String
     }
 
 initWorld : WorldState
 initWorld =
     { visited = Set.empty
     , visitCounts = Dict.empty
+    , visitHistory = []
     }
 
 addVisit : String -> WorldState -> WorldState
@@ -37,15 +40,23 @@ addVisit pageId world =
 
         newCounts =
             Dict.insert pageId (oldCount + 1) world.visitCounts
+
+        newHistory =
+            pageId :: world.visitHistory
     in
     { visited = newVisited
     , visitCounts = newCounts
+    , visitHistory = newHistory
     }
 
 visitCount : String -> WorldState -> Int
 visitCount pageId world =
     Dict.get pageId world.visitCounts
         |> Maybe.withDefault 0
+
+visitPath : WorldState -> List String
+visitPath world =
+    List.reverse world.visitHistory
 
 hasReachedThreshold : String -> WorldState -> Bool
 hasReachedThreshold pageId world =

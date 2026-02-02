@@ -8,7 +8,7 @@ module Utils exposing
     , gameOverInfo
     )
 
-import Html exposing (Html, p, text)
+import Html exposing (Html, p, hr, text)
 import World exposing (WorldState, visitCount, hasReachedThreshold)
 import String exposing (fromInt)
 import Locale exposing (Locale, is, en, ru)
@@ -40,14 +40,47 @@ isBookUrl : String -> Config -> Bool
 isBookUrl url cfg =
     url == cfg.bookUrl
 
-extraInfo config locale world currentPage =
-    if config.showDebugInfo then
-        [ p [] [ text (locale.debugCurrentPage currentPage (String.fromInt (World.visitCount currentPage world))) ] ]
-    else
-        []
+formatPath : Locale -> List String -> String
+formatPath locale path =
+    let
+        pathString = String.join ", " path
+    in
+    String.replace "%s" pathString locale.debugPathBrackets
 
+formatDebugInfo : Locale -> WorldState -> String -> String
+formatDebugInfo locale world currentPage =
+    let
+        visits = String.fromInt (World.visitCount currentPage world)
+        pathText = 
+            String.join ", " (World.visitPath world)
+                |> (\path -> String.replace "%s" path locale.debugPathBrackets)
+    in
+    String.join " | " 
+        [ locale.debugCurrentPagePrefix ++ ": " ++ currentPage
+        , locale.debugCurrentPageVisits |> String.replace "%s" (" " ++ visits)
+        , locale.debugPathLabel ++ ": " ++ pathText
+        ]
+
+extraInfo : Config -> Locale -> WorldState -> String -> List (Html msg)
+extraInfo config locale world currentPage =
+    case config.showDebugInfo of
+        True ->
+            [ hr [] []
+            , p [] [ text (formatDebugInfo locale world currentPage) ]
+            ]
+
+        False ->
+            []
+
+gameOverInfo : Locale -> WorldState -> String -> List (Html msg)
 gameOverInfo locale world currentPage =
-    if World.hasReachedThreshold currentPage world then
-        [ p [] [ text locale.gameOver ] ]
-    else
-        []
+    case currentPage of
+        "start" ->
+            []
+
+        _ ->
+            case World.hasReachedThreshold currentPage world of
+                True ->
+                    [ p [] [ text locale.gameOver ] ]
+                False ->
+                    []
