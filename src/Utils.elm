@@ -23,9 +23,9 @@ type alias Config =
 defaultConfig : Config
 defaultConfig =
     { defaultLocale = is
-    , bookUrl = "./book.json"
-    , markdownUrl = "./book.md"
-    , showDebugInfo = False
+    , bookUrl = "/res/book.json"
+    , markdownUrl = "/res/book.md"
+    , showDebugInfo = True
     }
 
 bookUrl : Config -> String
