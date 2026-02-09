@@ -2,6 +2,7 @@ module World exposing
     ( WorldState
     , initWorld
     , threshold
+    , safePages
     , addVisit
     , visitCount
     , visitPath
@@ -14,6 +15,10 @@ import Set exposing (Set)
 threshold : Int
 threshold =
     3
+
+safePages : Set String
+safePages =
+    Set.fromList [ "start", "todo" ]
 
 type alias WorldState =
     { visited : Set String
@@ -30,29 +35,32 @@ initWorld =
 
 addVisit : String -> WorldState -> WorldState
 addVisit pageId world =
-    let
-        newVisited =
-            Set.insert pageId world.visited
-
-        oldCount =
-            Dict.get pageId world.visitCounts
-                |> Maybe.withDefault 0
-
-        newCounts =
-            Dict.insert pageId (oldCount + 1) world.visitCounts
-
-        newHistory =
-            pageId :: world.visitHistory
-    in
-    { visited = newVisited
-    , visitCounts = newCounts
-    , visitHistory = newHistory
+    { world 
+    | visited = Set.insert pageId world.visited
+    , visitHistory = pageId :: world.visitHistory
+    , visitCounts = updateContentCounts pageId world.visitCounts
     }
+
+updateContentCounts : String -> Dict String Int -> Dict String Int
+updateContentCounts pageId counts =
+    Dict.union (incrementPageCounter pageId counts |> filterContentPages) 
+               (filterContentPages counts)
+
+filterContentPages : Dict String Int -> Dict String Int
+filterContentPages =
+    Dict.filter (\key _ -> not <| Set.member key safePages)
+
+incrementPageCounter : String -> Dict String Int -> Dict String Int
+incrementPageCounter pageId counts =
+    let
+        oldCount = Dict.get pageId counts |> Maybe.withDefault 0
+        newCount = oldCount + 1
+    in
+    Dict.singleton pageId newCount
 
 visitCount : String -> WorldState -> Int
 visitCount pageId world =
-    Dict.get pageId world.visitCounts
-        |> Maybe.withDefault 0
+    Dict.get pageId world.visitCounts |> Maybe.withDefault 0
 
 visitPath : WorldState -> List String
 visitPath world =
@@ -60,4 +68,4 @@ visitPath world =
 
 hasReachedThreshold : String -> WorldState -> Bool
 hasReachedThreshold pageId world =
-    visitCount pageId world >= threshold
+    not (Set.member pageId safePages) && visitCount pageId world >= threshold

@@ -40,20 +40,15 @@ isBookUrl : String -> Config -> Bool
 isBookUrl url cfg =
     url == cfg.bookUrl
 
-formatPath : Locale -> List String -> String
-formatPath locale path =
-    let
-        pathString = String.join ", " path
-    in
-    String.replace "%s" pathString locale.debugPathBrackets
+formatVisitPath : List String -> String
+formatVisitPath path = 
+    "[ " ++ String.join ", " path ++ " ]"
 
 formatDebugInfo : Locale -> WorldState -> String -> String
 formatDebugInfo locale world currentPage =
     let
         visits = String.fromInt (World.visitCount currentPage world)
-        pathText = 
-            String.join ", " (World.visitPath world)
-                |> (\path -> String.replace "%s" path locale.debugPathBrackets)
+        pathText = formatVisitPath (World.visitPath world)
     in
     String.join " | " 
         [ locale.debugCurrentPagePrefix ++ ": " ++ currentPage
@@ -74,13 +69,6 @@ extraInfo config locale world currentPage =
 
 gameOverInfo : Locale -> WorldState -> String -> List (Html msg)
 gameOverInfo locale world currentPage =
-    case currentPage of
-        "start" ->
-            []
-
-        _ ->
-            case World.hasReachedThreshold currentPage world of
-                True ->
-                    [ p [] [ text locale.gameOver ] ]
-                False ->
-                    []
+    case World.hasReachedThreshold currentPage world of
+        True  -> [ p [] [ text locale.gameOver ] ]
+        False -> []

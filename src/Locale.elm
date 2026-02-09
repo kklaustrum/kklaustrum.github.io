@@ -14,7 +14,6 @@ type alias Locale =
     , debugCurrentPagePrefix : String
     , debugCurrentPageVisits : String
     , debugPathLabel : String
-    , debugPathBrackets : String
     , gameOver : String
     }
 
@@ -32,7 +31,6 @@ is =
     , debugCurrentPagePrefix = "Núverandi"
     , debugCurrentPageVisits = "heimsóknir:%s"
     , debugPathLabel = "Stígn"
-    , debugPathBrackets = "[%s]"
     , gameOver = "Ganga í hringi. Teldu þetta leik lokinn."
     }
 
@@ -50,7 +48,6 @@ en =
     , debugCurrentPagePrefix = "Current"
     , debugCurrentPageVisits = "visits:%s"
     , debugPathLabel = "Path"
-    , debugPathBrackets = "[%s]"
     , gameOver = "Walking in circles. Consider this game over."
     }
 
@@ -68,6 +65,5 @@ ru =
     , debugCurrentPagePrefix = "Текущая"
     , debugCurrentPageVisits = "посещений:%s"
     , debugPathLabel = "Путь"
-    , debugPathBrackets = "[%s]"
     , gameOver = "Ходим по кругу. Считай, что game over."
     }
