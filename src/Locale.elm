@@ -15,6 +15,12 @@ type alias Locale =
     , debugCurrentPageVisits : String
     , debugPathLabel : String
     , gameOver : String
+    , paramsLabel : String
+    , inventoryLabel : String
+    , noItemsLabel : String
+    , curiosity : String
+    , endurance : String
+    , intellect : String
     }
 
 is =
@@ -32,6 +38,12 @@ is =
     , debugCurrentPageVisits = "heimsóknir:%s"
     , debugPathLabel = "Stígn"
     , gameOver = "Ganga í hringi. Teldu þetta leik lokinn."
+    , paramsLabel = "Gildi"
+    , inventoryLabel = "Vörubirgði"
+    , noItemsLabel = "Engar vörur"
+    , curiosity = "Forvitni"
+    , endurance = "Úthald"
+    , intellect = "Greind"
     }
 
 en =
@@ -49,6 +61,12 @@ en =
     , debugCurrentPageVisits = "visits:%s"
     , debugPathLabel = "Path"
     , gameOver = "Walking in circles. Consider this game over."
+    , paramsLabel = "Parameters"
+    , inventoryLabel = "Inventory"
+    , noItemsLabel = "No items"
+    , curiosity = "Curiosity"
+    , endurance = "Endurance"
+    , intellect = "Intellect"
     }
 
 ru =
@@ -66,4 +84,10 @@ ru =
     , debugCurrentPageVisits = "посещений:%s"
     , debugPathLabel = "Путь"
     , gameOver = "Ходим по кругу. Считай, что game over."
+    , paramsLabel = "Параметры"
+    , inventoryLabel = "Инвентарь" 
+    , noItemsLabel = "Нет предметов"
+    , curiosity = "Любознательность"
+    , endurance = "Выносливость"
+    , intellect = "Интеллект"
     }

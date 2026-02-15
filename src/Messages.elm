@@ -15,3 +15,6 @@ goToPage = GoToPage
 
 resetToStart : Msg
 resetToStart = ResetToStart
+
+contentLoaded : Result ResourceError Book -> Msg
+contentLoaded = ContentLoaded

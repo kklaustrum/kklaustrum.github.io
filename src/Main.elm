@@ -11,7 +11,8 @@ import Locale exposing (Locale)
 import HttpError exposing (httpErrorToString)
 import Veil exposing (loadContent, Page, Book, pageset, ResourceError(..))
 import Utils exposing (defaultConfig, bookUrl)
-import World exposing (WorldState, initWorld, addVisit)
+import World exposing (WorldState, initWorld, addVisit, addItem, applyItemEffects)
+import Items exposing (getItemFromPage)
 
 -- ------------------------------------------------------------------
 -- Model
@@ -35,6 +36,21 @@ currentLocale model =
         Loading loc -> loc
         Ready { locale } -> locale
         Error loc _ -> loc
+
+updateWorldWithItem : String -> WorldState -> WorldState
+updateWorldWithItem pageId world =
+    case Items.getItemFromPage pageId of
+        Just itemId ->
+            world
+                |> World.addItem itemId
+                |> World.applyItemEffects itemId
+        Nothing -> world
+
+updateWorld : String -> WorldState -> WorldState
+updateWorld pageId world =
+    world
+        |> World.addVisit pageId
+        |> updateWorldWithItem pageId
 
 resourceErrorToString : Locale -> ResourceError -> String
 resourceErrorToString locale (HttpError httpErr) =
@@ -78,15 +94,10 @@ update msg model =
         GoToPage pageId ->
             case model of
                 Ready data ->
-                    let
-                        newWorld = addVisit pageId data.world
-                    in
-                    ( Ready { data | currentPage = pageId, world = newWorld }
+                    ( Ready { data | currentPage = pageId, world = updateWorld pageId data.world }
                     , Cmd.none
                     )
-
-                _ ->
-                    ( model, Cmd.none )
+                _ -> ( model, Cmd.none )
 
         ResetToStart ->
             case model of

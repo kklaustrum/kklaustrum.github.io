@@ -1,16 +1,14 @@
 module World exposing
     ( WorldState
-    , initWorld
-    , threshold
-    , safePages
-    , addVisit
-    , visitCount
-    , visitPath
-    , hasReachedThreshold
+    , initWorld, addVisit, addItem, applyItemEffects
+    , visitCount, visitPath, hasReachedThreshold
+    , getParam, inventoryList
+    , threshold, safePages
     )
 
 import Dict exposing (Dict)
 import Set exposing (Set)
+import Items exposing (defaultParams, Item, getItemById, getItemEffects, addToInventory)
 
 threshold : Int
 threshold =
@@ -24,6 +22,8 @@ type alias WorldState =
     { visited : Set String
     , visitCounts : Dict String Int
     , visitHistory : List String
+    , inventory : List String
+    , params : Dict String Int
     }
 
 initWorld : WorldState
@@ -31,6 +31,8 @@ initWorld =
     { visited = Set.empty
     , visitCounts = Dict.empty
     , visitHistory = []
+    , inventory = []
+    , params = Items.defaultParams
     }
 
 addVisit : String -> WorldState -> WorldState
@@ -69,3 +71,29 @@ visitPath world =
 hasReachedThreshold : String -> WorldState -> Bool
 hasReachedThreshold pageId world =
     not (Set.member pageId safePages) && visitCount pageId world >= threshold
+
+applyItemEffects : String -> WorldState -> WorldState
+applyItemEffects itemId world =
+    case Items.getItemById itemId of
+        Just item ->
+            let
+                effects = Items.getItemEffects item
+                updateParam k v =
+                    Dict.get k world.params 
+                        |> Maybe.withDefault 0 
+                        |> (+) v
+                newParams = Dict.map updateParam effects
+            in
+            { world | params = Dict.union newParams world.params }
+        Nothing -> world
+
+addItem : String -> WorldState -> WorldState
+addItem itemId world =
+    { world | inventory = Items.addToInventory itemId world.inventory }
+
+getParam : String -> WorldState -> Int
+getParam paramName world =
+    Dict.get paramName world.params |> Maybe.withDefault 0
+
+inventoryList : WorldState -> List String
+inventoryList world = world.inventory
