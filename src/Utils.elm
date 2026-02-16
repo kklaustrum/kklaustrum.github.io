@@ -19,6 +19,7 @@ import Dict exposing (Dict)
 import Set exposing (Set)
 import Locale exposing (Locale, is, en, ru)
 import String exposing (fromInt)
+import Character exposing (Character)
 
 type alias Config =
     { defaultLocale : Locale
@@ -90,7 +91,7 @@ formatVisitPath : Locale -> List String -> String
 formatVisitPath locale path =
     formatListWithBrackets stringHelpers locale.debugPathLabel path
 
-formatParams : Locale -> WorldState -> String
+formatParams : Locale -> Character -> String
 formatParams locale world =
     let
         paramTranslations =
@@ -110,7 +111,7 @@ formatParams locale world =
     labelWithSeparator stringHelpers locale.paramsLabel 
         (String.join stringHelpers.listSep paramStrings)
 
-formatInventory : Locale -> WorldState -> String
+formatInventory : Locale -> Character -> String
 formatInventory locale world =
     let
         result = formatListWithBrackets stringHelpers locale.inventoryLabel world.inventory
@@ -130,20 +131,20 @@ formatDebugInfo locale world currentPage =
         , pathText
         ]
 
-extraInfo : Config -> Locale -> WorldState -> String -> List (Html msg)
-extraInfo config locale world currentPage =
+extraInfo : Config -> Locale -> WorldState -> Character -> String -> List (Html msg)
+extraInfo config locale world character currentPage =
     case config.showDebugInfo of
         True ->
             [ hr [] []
             , p [] [ text (formatDebugInfo locale world currentPage) ]
-            , p [] [ text (formatParams locale world) ]
-            , p [] [ text (formatInventory locale world) ]
+            , p [] [ text (formatParams locale character) ]
+            , p [] [ text (formatInventory locale character) ]
             ]
         False ->
             []
 
-gameOverInfo : Locale -> WorldState -> String -> List (Html msg)
-gameOverInfo locale world currentPage =
-    case hasReachedThreshold currentPage world of
+gameOverInfo : Locale -> WorldState -> Character -> String -> List (Html msg)
+gameOverInfo locale world character currentPage =
+    case World.hasReachedThreshold currentPage world of
         True  -> [ p [] [ text locale.gameOver ] ]
         False -> []

@@ -21,6 +21,7 @@ type alias Locale =
     , curiosity : String
     , endurance : String
     , intellect : String
+    , itemPickedUp : String
     }
 
 is =
@@ -44,6 +45,7 @@ is =
     , curiosity = "Forvitni"
     , endurance = "Úthald"
     , intellect = "Greind"
+    , itemPickedUp = "Fann hlut: %s"
     }
 
 en =
@@ -67,6 +69,7 @@ en =
     , curiosity = "Curiosity"
     , endurance = "Endurance"
     , intellect = "Intellect"
+    , itemPickedUp = "Picked up item: %s"
     }
 
 ru =
@@ -90,4 +93,5 @@ ru =
     , curiosity = "Любознательность"
     , endurance = "Выносливость"
     , intellect = "Интеллект"
+    , itemPickedUp = "Получена вещь %s"
     }

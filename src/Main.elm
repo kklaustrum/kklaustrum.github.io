@@ -6,12 +6,13 @@ import Html exposing (Html)
 import String
 
 import Views exposing (viewLoading, viewError, viewPage)
-import Messages exposing (Msg(..), goToPage, resetToStart)
+import Messages exposing (Msg(..), goToPage, resetToStart, itemPickedUp)
 import Locale exposing (Locale)
 import HttpError exposing (httpErrorToString)
 import Veil exposing (loadContent, Page, Book, pageset, ResourceError(..))
 import Utils exposing (defaultConfig, bookUrl)
-import World exposing (WorldState, initWorld, addVisit, addItem, applyItemEffects)
+import World exposing (WorldState, initWorld, addVisit)
+import Character exposing (Character, initCharacter, visitPage)
 import Items exposing (getItemFromPage)
 
 -- ------------------------------------------------------------------
@@ -22,8 +23,10 @@ type Model
     | Ready
         { locale : Locale
         , currentPage : String
+        , previousPage : Maybe String
         , pageset : Dict String Page
         , world : WorldState
+        , character : Character
         }
     | Error Locale String
 
@@ -36,21 +39,6 @@ currentLocale model =
         Loading loc -> loc
         Ready { locale } -> locale
         Error loc _ -> loc
-
-updateWorldWithItem : String -> WorldState -> WorldState
-updateWorldWithItem pageId world =
-    case Items.getItemFromPage pageId of
-        Just itemId ->
-            world
-                |> World.addItem itemId
-                |> World.applyItemEffects itemId
-        Nothing -> world
-
-updateWorld : String -> WorldState -> WorldState
-updateWorld pageId world =
-    world
-        |> World.addVisit pageId
-        |> updateWorldWithItem pageId
 
 resourceErrorToString : Locale -> ResourceError -> String
 resourceErrorToString locale (HttpError httpErr) =
@@ -79,8 +67,10 @@ update msg model =
                 Ok book ->
                     ( Ready { locale = defaultConfig.defaultLocale
                            , currentPage = "start"
+                           , previousPage = Nothing
                            , pageset = Veil.pageset book
-                           , world = initWorld
+                           , world = World.initWorld
+                           , character = Character.initCharacter
                            }
                     , Cmd.none
                     )
@@ -94,10 +84,19 @@ update msg model =
         GoToPage pageId ->
             case model of
                 Ready data ->
-                    ( Ready { data | currentPage = pageId, world = updateWorld pageId data.world }
+                    let
+                        newWorld = World.addVisit pageId data.world
+                        newCharacter = Character.visitPage pageId data.character
+                    in
+                    ( Ready { data | currentPage = pageId
+                                   , previousPage = Nothing
+                                   , world = newWorld
+                                   , character = newCharacter }
                     , Cmd.none
                     )
-                _ -> ( model, Cmd.none )
+                Loading _ -> ( model, Cmd.none )
+        
+                Error _ _ -> ( model, Cmd.none )
 
         ResetToStart ->
             case model of
@@ -106,6 +105,10 @@ update msg model =
 
                 _ ->
                     ( model, Cmd.none )
+        ItemPickedUp itemId ->
+            case model of
+                Ready data -> ( model, Cmd.none )
+                _ -> ( model, Cmd.none )
 
 -- ------------------------------------------------------------------
 -- View
@@ -116,8 +119,8 @@ view model =
         Loading locale ->
             viewLoading locale
 
-        Ready { locale, currentPage, pageset, world } ->
-            viewPage defaultConfig locale pageset world currentPage
+        Ready { locale, currentPage, previousPage, pageset, world, character } ->
+            Views.viewPage defaultConfig locale pageset world character previousPage currentPage 
 
         Error locale errMsg ->
             viewError locale errMsg

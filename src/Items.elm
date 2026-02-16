@@ -68,16 +68,17 @@ getItemById itemId =
     List.filter (\item -> item.name == itemId) availableItems
         |> List.head
 
+negatePenalty : a -> Int -> Int
+negatePenalty _ value = 
+    negate value
+
 getItemEffects : Item -> Dict String Int
 getItemEffects item =
-    let
-        buffsDict = item.buffs
-        pensDict = Dict.map (\_ v -> negate v) item.penalties
-    in
-    Dict.union buffsDict pensDict
+    Dict.union item.buffs 
+        (Dict.map negatePenalty item.penalties)
 
 addToInventory : String -> List String -> List String
 addToInventory itemId inventory =
     case List.member itemId inventory of
         True -> inventory
-        False -> itemId :: inventory
+        False -> List.append inventory [itemId] 

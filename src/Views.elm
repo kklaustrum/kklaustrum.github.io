@@ -14,7 +14,7 @@ import Html.Events exposing (onClick)
 import String exposing (fromInt)
 
 import Veil exposing (Page)
-import Messages exposing (Msg(..))
+import Messages exposing (Msg(..), goToPage)
 import Locale exposing (Locale)
 
 import UiClasses exposing
@@ -31,8 +31,21 @@ import UiClasses exposing
     , pulseAnimationCls
     )
 
-import Utils exposing (extraInfo, gameOverInfo)
+import Utils exposing (Config, extraInfo, gameOverInfo)
 import World exposing (WorldState, hasReachedThreshold, visitCount)
+import Items exposing (getItemFromPage, getItemById)
+import Character exposing (Character)
+
+type alias ModalContent msg =
+    { title : String
+    , content : List (Html msg)
+    , buttons : List (Html msg)
+    }
+
+type alias ModalConfig =
+    { containerClass : String
+    , titleClass : String
+    }
 
 -- ------------------------------------------------------------------
 -- Обёртка‑контейнер
@@ -64,7 +77,53 @@ viewParagraphs paras =
 -- ------------------------------------------------------------------
 -- Страницы
 -- ------------------------------------------------------------------
-viewPage config locale pages world currentPage =
+viewModal : ModalConfig -> Locale -> ModalContent msg -> Html msg
+viewModal config locale modal =
+    novelContainer
+        [ h1 [ class config.titleClass ] [ text modal.title ]
+        , div [ class pageContentCls ] modal.content
+        , div [ class choicesContainerCls ] modal.buttons
+        ]
+
+viewPageNotFound : Config -> Locale -> String -> Html Msg
+viewPageNotFound config locale currentPage =
+    let
+        modal : ModalContent Msg
+        modal =
+            { title = locale.pageNotFound
+            , content = [ p [] [ text ("ID: " ++ currentPage) ] ]
+            , buttons = [ choiceButton locale.backToHomeLabel "start" ]
+            }
+    in
+    viewModal 
+        { containerClass = errorTitleCls
+        , titleClass = errorTitleCls 
+        }
+        locale 
+        modal
+
+viewItemPickedUp : Config -> Locale -> String -> Maybe String -> Html Msg
+viewItemPickedUp config locale itemId mPreviousPage =
+    let
+        itemName = Items.getItemById itemId |> Maybe.map .name |> Maybe.withDefault "???"
+        pickupText = String.replace "%s" itemName locale.itemPickedUp
+        backPage = Maybe.withDefault "start" mPreviousPage
+
+        modal =
+            { title = locale.inventoryLabel
+            , content = [ p [] [ text pickupText ] ]
+            , buttons = [ choiceButton "Ок" backPage ]
+            }
+    in
+    viewModal 
+        { containerClass = pageTitleCls
+        , titleClass = pageTitleCls
+        }
+        locale 
+        modal
+
+viewNormalPage : Config -> Locale -> Dict String Page -> WorldState -> Character -> String -> Html Msg
+viewNormalPage config locale pages world character currentPage =
     case Dict.get currentPage pages of
         Just page ->
             let
@@ -72,23 +131,31 @@ viewPage config locale pages world currentPage =
                 content =
                     case isGameOver of
                         True ->
-                            extraInfo config locale world currentPage
-                                ++ gameOverInfo locale world currentPage
+                            Utils.extraInfo config locale world character currentPage
+                                ++ Utils.gameOverInfo locale world character currentPage
                         False ->
                             [ h1 [ class pageTitleCls ] [ text page.title ]
                             , div [ class pageContentCls ] (viewParagraphs page.content)
                             ]
-                            ++ extraInfo config locale world currentPage
+                            ++ Utils.extraInfo config locale world character currentPage
                             ++ [ viewChoices page.choices ]
             in
             novelContainer content
 
         Nothing ->
-            novelContainer
-                [ h1 [ class errorTitleCls ] [ text locale.pageNotFound ]
-                , p [] [ text ("ID: " ++ currentPage) ]
-                , choiceButton locale.backToHomeLabel "start"
-                ]
+            viewPageNotFound config locale currentPage
+
+viewPage : Config -> Locale -> Dict String Page -> WorldState -> Character -> Maybe String -> String -> Html Msg
+viewPage config locale pages world character previousPage currentPage =
+    case Items.getItemFromPage currentPage of
+        Just itemId ->
+            viewItemPickedUp config locale itemId previousPage
+            
+        Nothing ->
+            if Dict.get currentPage pages == Nothing then
+                viewPageNotFound config locale currentPage
+            else
+                viewNormalPage config locale pages world character currentPage
 
 viewLoading : Locale -> Html msg
 viewLoading locale =
