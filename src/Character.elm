@@ -6,6 +6,8 @@ module Character exposing
     , getParam
     , inventoryList
     , visitPage
+    , shouldShowPickup
+    , updatePrevInventory
     )
 
 import Dict exposing (Dict)
@@ -13,13 +15,15 @@ import Items exposing (Item, getItemById, getItemEffects)
 
 type alias Character =
     { inventory : List String
+    , prevInventory : List String
     , params : Dict String Int
     }
 
 initCharacter : Character
 initCharacter =
     { inventory = []
-    , params = Items.defaultParams
+    , prevInventory = []
+    , params = Dict.fromList [ ("curiosity", 5), ("endurance", 10), ("intellect", 8) ]
     }
 
 addItem : String -> Character -> Character
@@ -57,9 +61,22 @@ inventoryList character = character.inventory
 
 visitPage : String -> Character -> Character
 visitPage pageId character =
-    Items.getItemFromPage pageId
-        |> Maybe.map (\itemId -> 
+    case Items.getItemFromPage pageId of
+        Just itemId ->
             character
+                |> updatePrevInventory
                 |> addItem itemId
-                |> applyItemEffects itemId)
-        |> Maybe.withDefault character
+                |> applyItemEffects itemId
+
+        Nothing ->
+            updatePrevInventory character
+
+shouldShowPickup : Character -> String -> Bool
+shouldShowPickup character pageId =
+    Items.getItemFromPage pageId
+        |> Maybe.map (\itemId -> List.member itemId character.inventory |> not)
+        |> Maybe.withDefault False
+
+updatePrevInventory : Character -> Character
+updatePrevInventory character =
+    { character | prevInventory = character.inventory }
