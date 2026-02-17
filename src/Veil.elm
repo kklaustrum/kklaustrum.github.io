@@ -2,7 +2,7 @@ module Veil exposing
     ( loadContent
     , Page
     , Book
-    , pageset
+    , storyline
     , ResourceError(..)
     )
 
@@ -22,8 +22,8 @@ type Book
 type ResourceError
     = HttpError Error
 
-pageset : Book -> Dict String Page
-pageset book =
+storyline : Book -> Dict String Page
+storyline book =
     case book of
         JsonBook dict -> dict
 

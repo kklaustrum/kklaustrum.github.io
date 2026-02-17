@@ -5,14 +5,15 @@ import Dict exposing (Dict)
 import Html exposing (Html)
 import String
 
-import Views exposing (viewLoading, viewError, viewPage)
-import Messages exposing (Msg(..), goToPage, resetToStart, itemPickedUp)
+import Views exposing (viewPage)
+import Components exposing (viewLoading, viewError)
+import Messages exposing (Msg(..), goToPage, resetToStart)
 import Locale exposing (Locale)
 import HttpError exposing (httpErrorToString)
-import Veil exposing (loadContent, Page, Book, pageset, ResourceError(..))
+import Veil exposing (loadContent, Page, Book, storyline, ResourceError(..))
 import Utils exposing (defaultConfig, bookUrl)
 import World exposing (WorldState, initWorld, addVisit)
-import Character exposing (Character, initCharacter, visitPage)
+import Character exposing (Character, initCharacter, visitPage, shouldShowPickup)
 import Items exposing (getItemFromPage)
 
 -- ------------------------------------------------------------------
@@ -24,7 +25,7 @@ type Model
         { locale : Locale
         , currentPage : String
         , previousPage : Maybe String
-        , pageset : Dict String Page
+        , storyline : Dict String Page
         , world : WorldState
         , character : Character
         }
@@ -68,7 +69,7 @@ update msg model =
                     ( Ready { locale = defaultConfig.defaultLocale
                            , currentPage = "start"
                            , previousPage = Nothing
-                           , pageset = Veil.pageset book
+                           , storyline = Veil.storyline book
                            , world = World.initWorld
                            , character = Character.initCharacter
                            }
@@ -89,7 +90,7 @@ update msg model =
                         newCharacter = Character.visitPage pageId data.character
                     in
                     ( Ready { data | currentPage = pageId
-                                   , previousPage = Nothing
+                                   , previousPage = Just data.currentPage
                                    , world = newWorld
                                    , character = newCharacter }
                     , Cmd.none
@@ -105,10 +106,6 @@ update msg model =
 
                 _ ->
                     ( model, Cmd.none )
-        ItemPickedUp itemId ->
-            case model of
-                Ready data -> ( model, Cmd.none )
-                _ -> ( model, Cmd.none )
 
 -- ------------------------------------------------------------------
 -- View
@@ -119,8 +116,8 @@ view model =
         Loading locale ->
             viewLoading locale
 
-        Ready { locale, currentPage, previousPage, pageset, world, character } ->
-            Views.viewPage defaultConfig locale pageset world character previousPage currentPage 
+        Ready { locale, currentPage, previousPage, storyline, world, character } ->
+            Views.viewPage defaultConfig locale storyline world character previousPage currentPage 
 
         Error locale errMsg ->
             viewError locale errMsg

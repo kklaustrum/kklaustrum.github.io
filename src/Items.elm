@@ -1,7 +1,6 @@
 module Items exposing
     ( Item
     , PageItem
-    , defaultParams
     , availableItems
     , pickupPages
     , getItemFromPage
@@ -22,9 +21,6 @@ type alias Item =
     , buffs : Dict String Int
     , penalties : Dict String Int
     }
-
-defaultParams : Dict String Int
-defaultParams = Dict.fromList [ ("curiosity", 5), ("endurance", 10), ("intellect", 8) ]
 
 firstItem : Item
 firstItem = 
@@ -54,7 +50,7 @@ pickupPages : List PageItem
 pickupPages =
     [ { pageId = "mint", itemId = "firstItem" }
     , { pageId = "ux", itemId = "secondItem" }
-    , { pageId = "unwritten", itemId = "thirdItem" }
+    , { pageId = "roguelike", itemId = "thirdItem" }
     ]
 
 pageDict : Dict String PageItem

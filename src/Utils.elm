@@ -19,7 +19,7 @@ import Dict exposing (Dict)
 import Set exposing (Set)
 import Locale exposing (Locale, is, en, ru)
 import String exposing (fromInt)
-import Character exposing (Character)
+import Character exposing (Character, getParam)
 
 type alias Config =
     { defaultLocale : Locale
@@ -92,24 +92,14 @@ formatVisitPath locale path =
     formatListWithBrackets stringHelpers locale.debugPathLabel path
 
 formatParams : Locale -> Character -> String
-formatParams locale world =
-    let
-        paramTranslations =
-            [ ( "curiosity", locale.curiosity )
-            , ( "endurance", locale.endurance )
-            , ( "intellect", locale.intellect )
-            ]
-   
-        paramStrings =
-            paramTranslations
-                |> List.map (\(key, label) -> 
-                    let
-                        value = Dict.get key world.params |> Maybe.withDefault 0
-                    in
-                        label ++ stringHelpers.space ++ String.fromInt value)
-    in
-    labelWithSeparator stringHelpers locale.paramsLabel 
-        (String.join stringHelpers.listSep paramStrings)
+formatParams locale character =
+    [ (locale.curiosity, getParam "curiosity" character)
+    , (locale.endurance, getParam "endurance" character)
+    , (locale.intellect, getParam "intellect" character)
+    ]
+    |> List.map (\(label, value) -> label ++ stringHelpers.space ++ String.fromInt value)
+    |> String.join stringHelpers.listSep
+    |> labelWithSeparator stringHelpers locale.paramsLabel
 
 formatInventory : Locale -> Character -> String
 formatInventory locale world =
