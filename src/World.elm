@@ -1,6 +1,6 @@
 module World exposing
     ( WorldState
-    , initWorld, addVisit
+    , initWorld, addVisitIfNew
     , visitCount, visitPath, hasReachedThreshold
     , threshold, safePages
     )
@@ -36,6 +36,12 @@ addVisit pageId world =
     , visitHistory = pageId :: world.visitHistory
     , visitCounts = updateContentCounts pageId world.visitCounts
     }
+
+addVisitIfNew : String -> WorldState -> String -> WorldState
+addVisitIfNew pageId world currentPage =
+    case pageId == currentPage of
+        True -> world
+        False -> addVisit pageId world
 
 updateContentCounts : String -> Dict String Int -> Dict String Int
 updateContentCounts pageId counts =

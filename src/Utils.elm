@@ -4,12 +4,10 @@ module Utils exposing
     , bookUrl
     , markdownUrl
     , isBookUrl
-    , extraInfo
-    , gameOverInfo
-    , formatDebugInfo
     , formatVisitPath
-    , formatParams
-    , formatInventory
+    , paramData
+    , formatDebugInfoPure, formatParamsData, formatInventoryData
+    , debugData, isGameOver  
     )
 
 import Html exposing (Html, p, hr, text)
@@ -20,6 +18,7 @@ import Set exposing (Set)
 import Locale exposing (Locale, is, en, ru)
 import String exposing (fromInt)
 import Character exposing (Character, getParam)
+import Messages exposing (Msg(..))
 
 type alias Config =
     { defaultLocale : Locale
@@ -91,50 +90,55 @@ formatVisitPath : Locale -> List String -> String
 formatVisitPath locale path =
     formatListWithBrackets stringHelpers locale.debugPathLabel path
 
-formatParams : Locale -> Character -> String
-formatParams locale character =
-    [ (locale.curiosity, getParam "curiosity" character)
-    , (locale.endurance, getParam "endurance" character)
-    , (locale.intellect, getParam "intellect" character)
-    ]
-    |> List.map (\(label, value) -> label ++ stringHelpers.space ++ String.fromInt value)
-    |> String.join stringHelpers.listSep
-    |> labelWithSeparator stringHelpers locale.paramsLabel
+debugData : WorldState -> String -> { currentPage : String, visits : Int, path : List String }
+debugData world currentPage =
+    { currentPage = currentPage
+    , visits = World.visitCount currentPage world
+    , path = World.visitPath world
+    }
 
-formatInventory : Locale -> Character -> String
-formatInventory locale world =
-    let
-        result = formatListWithBrackets stringHelpers locale.inventoryLabel world.inventory
-    in
-    result
+isGameOver : WorldState -> String -> Bool
+isGameOver world currentPage =
+    World.hasReachedThreshold currentPage world
 
-formatDebugInfo : Locale -> WorldState -> String -> String
-formatDebugInfo locale world currentPage =
+paramData : Character -> { curiosity : Int, endurance : Int, intellect : Int }
+paramData character =
+    { curiosity = Character.getParam "curiosity" character
+    , endurance = Character.getParam "endurance" character
+    , intellect = Character.getParam "intellect" character
+    }
+
+inventoryData : Character -> List String
+inventoryData character =
+    character.inventory
+
+formatDebugInfoPure : Locale -> String -> Int -> List String -> String
+formatDebugInfoPure locale currentPage visits path =
     let
-        visits = String.fromInt (visitCount currentPage world)
-        pathText = formatVisitPath locale (visitPath world)
-        visitsText = replaceLocalePlaceholder stringHelpers locale.debugCurrentPageVisits (stringHelpers.space ++ visits)
+        visitsText = replaceLocalePlaceholder stringHelpers locale.debugCurrentPageVisits (String.fromInt visits)
     in
     String.join " | " 
-        [ locale.debugCurrentPagePrefix ++ stringHelpers.separator ++ currentPage
+        [ labelWithSeparator stringHelpers locale.debugCurrentPagePrefix currentPage
         , visitsText
-        , pathText
+        , formatVisitPath locale path
         ]
 
-extraInfo : Config -> Locale -> WorldState -> Character -> String -> List (Html msg)
-extraInfo config locale world character currentPage =
-    case config.showDebugInfo of
-        True ->
-            [ hr [] []
-            , p [] [ text (formatDebugInfo locale world currentPage) ]
-            , p [] [ text (formatParams locale character) ]
-            , p [] [ text (formatInventory locale character) ]
+formatParamsData : Locale -> Int -> Int -> Int -> String
+formatParamsData locale curiosity endurance intellect =
+    let
+        paramPairs =
+            [ (locale.curiosity, curiosity)
+            , (locale.endurance, endurance)
+            , (locale.intellect, intellect)
             ]
-        False ->
-            []
+                |> List.map (\(label, value) -> 
+                    labelWithSeparator stringHelpers label (String.fromInt value))
+                |> String.join stringHelpers.listSep
+    in
+    labelWithSeparator stringHelpers locale.paramsLabel paramPairs
 
-gameOverInfo : Locale -> WorldState -> Character -> String -> List (Html msg)
-gameOverInfo locale world character currentPage =
-    case World.hasReachedThreshold currentPage world of
-        True  -> [ p [] [ text locale.gameOver ] ]
-        False -> []
+formatInventoryData : Locale -> List String -> String
+formatInventoryData locale items =
+    case items of
+        [] -> labelWithSeparator stringHelpers locale.inventoryLabel locale.noItemsLabel
+        _ -> formatListWithBrackets stringHelpers locale.inventoryLabel items

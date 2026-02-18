@@ -17,14 +17,14 @@ import Character exposing (Character)
 
 import UiClasses exposing (..)
 import Items exposing (getItemById)
-import Components exposing (choiceButton, viewChoices)
-import Utils exposing (Config, extraInfo, gameOverInfo)
+import Components exposing (choiceButton, viewChoices, titleHtml, contentHtml, gameOverInfo, debugInfo)
+import Utils exposing (Config)
 
 -- ------------------------------------------------------------------
 -- Render
 -- ------------------------------------------------------------------
-renderItemPickup : Config -> Locale -> String -> Maybe String -> List (Html Msg)
-renderItemPickup config locale itemId maybePrevPage =
+renderItemPickup : Config -> Locale -> String -> String -> List (Html Msg)
+renderItemPickup config locale itemId currentPage =
     let
         maybeItem = Items.getItemById itemId
         itemName =
@@ -33,57 +33,49 @@ renderItemPickup config locale itemId maybePrevPage =
                 Nothing        -> "???"
 
         pickupText = String.replace "%s" itemName locale.itemPickedUp
-        backPage = Maybe.withDefault "start" maybePrevPage
     in
     [ h1 [ class pageTitleCls ] [ text locale.inventoryLabel ]
     , p [ class paragraphCls ] [ text pickupText ]
-    , choiceButton "Ok" backPage
+    , div [ class centeredChoiceCls ]
+        [ choiceButton ("Ok", currentPage) ]
     ]
 
 renderPageNotFound : Config -> Locale -> String -> List (Html Msg)
 renderPageNotFound config locale currentPage =
     [ h1 [ class errorTitleCls ] [ text locale.pageNotFound ]
     , p [] [ text ("ID: " ++ currentPage) ]
-    , choiceButton locale.backToHomeLabel "start"
+    , choiceButton (locale.backToHomeLabel, "start")
     ]
 
 renderGameOver : Config -> Locale -> WorldState -> Character -> String -> List (Html Msg)
 renderGameOver config locale world character currentPage =
-    gameOverInfo locale world character currentPage
+    Components.gameOverInfo locale (Utils.isGameOver world currentPage)
 
 -- -----------------------------------------------------------------
 -- Helpers and renderNormalPage
 -- -----------------------------------------------------------------
 
-titleHtml : Page -> List (Html Msg)
-titleHtml page =
-    [ h1 [ class pageTitleCls ] [ text page.title ] ]
-
-contentHtml : Page -> List (Html Msg)
-contentHtml page =
-    List.map
-        (\para ->
-            div [ class pageContentCls ]
-                [ p [ class paragraphCls ] [ text para ] ]
-        )
-        page.content
-
 debugHtml : Config -> Locale -> WorldState -> Character -> String -> List (Html Msg)
-debugHtml config locale world character curPage =
-    extraInfo config locale world character curPage
+debugHtml config locale world character currentPage =
+    Components.debugInfo config locale (Utils.debugData world currentPage)
 
 choicesHtml : Page -> List (Html Msg)
 choicesHtml page =
     [ viewChoices page.choices ]
 
-renderNormalPage : Config -> Locale -> Dict String Page -> WorldState -> Character -> String -> List (Html Msg)
 renderNormalPage config locale storyline world character currentPage =
     case Dict.get currentPage storyline of
-        Nothing ->
-            []
-
+        Nothing -> []
         Just page ->
-            titleHtml page
-                ++ contentHtml page
-                ++ debugHtml config locale world character currentPage
-                ++ choicesHtml page
+            let
+                debug = Utils.debugData world currentPage
+                params = Utils.paramData character
+                gameOver = Utils.isGameOver world currentPage
+            in
+            [ Components.titleHtml page.title ]
+                ++ Components.contentHtml page.content
+                ++ Components.debugInfo config locale debug
+                ++ Components.paramsInfo locale params
+                ++ Components.inventoryInfo locale character.inventory
+                ++ Components.gameOverInfo locale gameOver
+                ++ [ Components.viewChoices page.choices ]

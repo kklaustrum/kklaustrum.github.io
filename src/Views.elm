@@ -21,7 +21,7 @@ import Components exposing (novelContainer, viewLoading, viewError)
 -- ViewMode
 --------------------------------------------------------------------
 type ViewMode
-    = ShowItemPickup String (Maybe String)
+    = ShowItemPickup String
     | ShowPageNotFound String
     | ShowGameOver
     | ShowNormalPage Page
@@ -33,9 +33,8 @@ determineViewMode :
     -> WorldState
     -> Character
     -> String          -- currentPage
-    -> Maybe String    -- previousPage (Maybe Nothing)
     -> ViewMode
-determineViewMode config locale storyline world character currentPage mPrevPage =
+determineViewMode config locale storyline world character currentPage =
     case Items.getItemFromPage currentPage of
         Just itemId ->
             if List.member itemId character.prevInventory then
@@ -49,7 +48,7 @@ determineViewMode config locale storyline world character currentPage mPrevPage 
                         else
                             ShowNormalPage page
             else
-                ShowItemPickup itemId mPrevPage
+                ShowItemPickup itemId
 
         Nothing ->
             case Dict.get currentPage storyline of
@@ -65,16 +64,16 @@ determineViewMode config locale storyline world character currentPage mPrevPage 
 -- ------------------------------------------------------------------
 -- viewPage
 -- ------------------------------------------------------------------
-viewPage : Config -> Locale -> Dict String Page -> WorldState -> Character -> Maybe String -> String -> Html Msg
-viewPage config locale storyline world character mPrevPage currentPage =
+viewPage : Config -> Locale -> Dict String Page -> WorldState -> Character -> String -> Html Msg
+viewPage config locale storyline world character currentPage =
     let
         mode =
-            determineViewMode config locale storyline world character currentPage mPrevPage
+            determineViewMode config locale storyline world character currentPage
 
         pageElements =
             case mode of
-                ShowItemPickup itemId mPrev ->
-                    renderItemPickup config locale itemId mPrev
+                ShowItemPickup itemId ->
+                    renderItemPickup config locale itemId currentPage
 
                 ShowPageNotFound pid ->
                     renderPageNotFound config locale pid

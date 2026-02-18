@@ -16,6 +16,10 @@ module UiClasses exposing
     , buttonActiveCls
     , fadeInAnimationCls
     , pulseAnimationCls
+    , debugInfoCls
+    , gameOverCls
+    , debugDividerCls
+    , centeredChoiceCls
     )
 
 type alias CssClass = String
@@ -74,7 +78,7 @@ choicesContainerCls =
     "mt-6 flex flex-col gap-3"
 
 -- ------------------------------------------------------------------
--- Кнопки выбора
+-- Кнопки
 -- ------------------------------------------------------------------
 buttonBaseCls : CssClass
 buttonBaseCls =
@@ -91,6 +95,10 @@ buttonActiveCls =
 choiceBtnCls : CssClass
 choiceBtnCls =
     "bg-gritty-600 text-white " ++ buttonBaseCls ++ " " ++ buttonHoverCls ++ " " ++ buttonActiveCls
+
+centeredChoiceCls : CssClass
+centeredChoiceCls =
+    "flex justify-center mt-6"
 
 -- ------------------------------------------------------------------
 -- Специальные ссылки
@@ -109,3 +117,21 @@ fadeInAnimationCls =
 pulseAnimationCls : CssClass
 pulseAnimationCls =
     "animate-pulse"
+
+-- ------------------------------------------------------------------
+-- Debug/Game Over
+-- ------------------------------------------------------------------
+debugInfoCls : CssClass
+debugInfoCls =
+    "mt-6 pt-4 border-t-2 border-gritty-400 bg-gritty-50 shadow-inner rounded-md p-4 font-mono text-base leading-none tracking-widest"
+
+gameOverCls : CssClass
+gameOverCls =
+    "mt-8 p-6 bg-gradient-to-br from-accent/20 to-gritty-900 border-4 border-accent/50 rounded-xl shadow-2xl font-mono text-xl font-bold tracking-widest text-accent shadow-gritty-lg"
+
+-- ------------------------------------------------------------------
+-- Dividers (debug)
+-- ------------------------------------------------------------------
+debugDividerCls : CssClass
+debugDividerCls = 
+    "border-t-2 border-gritty-400 bg-gradient-to-r from-gritty-400/50 to-transparent my-2"

@@ -9,12 +9,11 @@ import Views exposing (viewPage)
 import Components exposing (viewLoading, viewError)
 import Messages exposing (Msg(..), goToPage, resetToStart)
 import Locale exposing (Locale)
-import HttpError exposing (httpErrorToString)
+import HttpError exposing (resourceErrorToString)
 import Veil exposing (loadContent, Page, Book, storyline, ResourceError(..))
 import Utils exposing (defaultConfig, bookUrl)
-import World exposing (WorldState, initWorld, addVisit)
+import World exposing (WorldState, initWorld, addVisitIfNew)
 import Character exposing (Character, initCharacter, visitPage, shouldShowPickup)
-import Items exposing (getItemFromPage)
 
 -- ------------------------------------------------------------------
 -- Model
@@ -24,7 +23,6 @@ type Model
     | Ready
         { locale : Locale
         , currentPage : String
-        , previousPage : Maybe String
         , storyline : Dict String Page
         , world : WorldState
         , character : Character
@@ -40,10 +38,6 @@ currentLocale model =
         Loading loc -> loc
         Ready { locale } -> locale
         Error loc _ -> loc
-
-resourceErrorToString : Locale -> ResourceError -> String
-resourceErrorToString locale (HttpError httpErr) =
-    httpErrorToString locale httpErr
 
 -- ------------------------------------------------------------------
 -- Init
@@ -68,7 +62,6 @@ update msg model =
                 Ok book ->
                     ( Ready { locale = defaultConfig.defaultLocale
                            , currentPage = "start"
-                           , previousPage = Nothing
                            , storyline = Veil.storyline book
                            , world = World.initWorld
                            , character = Character.initCharacter
@@ -86,11 +79,10 @@ update msg model =
             case model of
                 Ready data ->
                     let
-                        newWorld = World.addVisit pageId data.world
+                        newWorld = World.addVisitIfNew pageId data.world data.currentPage
                         newCharacter = Character.visitPage pageId data.character
                     in
                     ( Ready { data | currentPage = pageId
-                                   , previousPage = Just data.currentPage
                                    , world = newWorld
                                    , character = newCharacter }
                     , Cmd.none
@@ -116,8 +108,8 @@ view model =
         Loading locale ->
             viewLoading locale
 
-        Ready { locale, currentPage, previousPage, storyline, world, character } ->
-            Views.viewPage defaultConfig locale storyline world character previousPage currentPage 
+        Ready { locale, currentPage, storyline, world, character } ->
+            Views.viewPage defaultConfig locale storyline world character currentPage 
 
         Error locale errMsg ->
             viewError locale errMsg

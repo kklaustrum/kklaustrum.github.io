@@ -1,7 +1,8 @@
-module HttpError exposing (httpErrorToString)
+module HttpError exposing (httpErrorToString, resourceErrorToString)
 
 import Http exposing (Error)
 import Locale exposing (Locale)
+import Veil exposing (ResourceError(..))
 
 httpErrorToString : Locale -> Error -> String
 httpErrorToString locale err =
@@ -22,3 +23,7 @@ httpErrorToString locale err =
         Http.BadBody b ->
             -- в локали шаблон "Cannot parse body: %s"
             String.replace "%s" b locale.httpBadBody
+
+resourceErrorToString : Locale -> ResourceError -> String
+resourceErrorToString locale (HttpError httpErr) =
+    httpErrorToString locale httpErr

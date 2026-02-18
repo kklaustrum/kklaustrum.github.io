@@ -63,11 +63,14 @@ visitPage : String -> Character -> Character
 visitPage pageId character =
     case Items.getItemFromPage pageId of
         Just itemId ->
-            character
-                |> updatePrevInventory
-                |> addItem itemId
-                |> applyItemEffects itemId
-
+            if shouldShowPickup character pageId then
+                character 
+                    |> updatePrevInventory 
+                    |> addItem itemId 
+                    |> applyItemEffects itemId
+            else
+                updatePrevInventory character
+                
         Nothing ->
             updatePrevInventory character
 
