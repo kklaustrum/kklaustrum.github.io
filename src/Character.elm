@@ -8,10 +8,14 @@ module Character exposing
     , visitPage
     , shouldShowPickup
     , updatePrevInventory
+    , allParamsData
+    , getParamLabel
+    , hasAtLeastTwoItems
     )
 
 import Dict exposing (Dict)
 import Items exposing (Item, getItemById, getItemEffects)
+import Locale exposing (Locale, is, en, ru)
 
 type alias Character =
     { inventory : List String
@@ -19,11 +23,38 @@ type alias Character =
     , params : Dict String Int
     }
 
+type alias ParamConfig =
+    { key : String
+    , default : Int
+    , labelField : Locale -> String
+    }
+
+allParams : List ParamConfig
+allParams =
+    [ { key = "curiosity", default = 5, labelField = \l -> l.curiosity }
+    , { key = "endurance", default = 7, labelField = \l -> l.endurance }
+    , { key = "intellect", default = 9, labelField = \l -> l.intellect }
+    ]
+
+allParamsData : Character -> Dict String Int
+allParamsData character = character.params
+
+initParams : Dict String Int
+initParams =
+    Dict.fromList (List.map (\p -> (p.key, p.default)) allParams)
+
+getParamLabel : Locale -> String -> String
+getParamLabel locale key =
+    List.filter (\p -> p.key == key) allParams
+        |> List.head
+        |> Maybe.map (\config -> config.labelField locale)
+        |> Maybe.withDefault key
+
 initCharacter : Character
 initCharacter =
     { inventory = []
     , prevInventory = []
-    , params = Dict.fromList [ ("curiosity", 5), ("endurance", 10), ("intellect", 8) ]
+    , params = initParams
     }
 
 addItem : String -> Character -> Character
@@ -83,3 +114,7 @@ shouldShowPickup character pageId =
 updatePrevInventory : Character -> Character
 updatePrevInventory character =
     { character | prevInventory = character.inventory }
+
+hasAtLeastTwoItems : List String -> Bool
+hasAtLeastTwoItems inventory =
+    List.length inventory >= 2

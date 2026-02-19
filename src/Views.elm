@@ -14,7 +14,7 @@ import World exposing (WorldState)
 import Items exposing (getItemFromPage)
 import Character exposing (Character)
 
-import Render exposing (renderItemPickup, renderPageNotFound, renderGameOver, renderNormalPage)
+import Render exposing (renderItemPickup, renderPageNotFound, renderGameOver, renderNormalPage, renderSecretPage)
 import Components exposing (novelContainer, viewLoading, viewError)
 
 --------------------------------------------------------------------
@@ -25,6 +25,7 @@ type ViewMode
     | ShowPageNotFound String
     | ShowGameOver
     | ShowNormalPage Page
+    | ShowSecretPage
 
 determineViewMode :
     Config
@@ -34,32 +35,31 @@ determineViewMode :
     -> Character
     -> String          -- currentPage
     -> ViewMode
+
 determineViewMode config locale storyline world character currentPage =
-    case Items.getItemFromPage currentPage of
+    if isSecretPage currentPage character then
+        ShowSecretPage
+    else if isPickupPage currentPage character then
+        ShowItemPickup (Items.getItemFromPage currentPage |> Maybe.withDefault "")
+    else
+        defaultPageMode storyline world currentPage
+
+isSecretPage : String -> Character -> Bool
+isSecretPage page character = page == "secret" && Character.hasAtLeastTwoItems character.inventory
+
+isPickupPage : String -> Character -> Bool
+isPickupPage page character =
+    case Items.getItemFromPage page of
         Just itemId ->
-            if List.member itemId character.prevInventory then
-                case Dict.get currentPage storyline of
-                    Nothing ->
-                        ShowPageNotFound currentPage
-
-                    Just page ->
-                        if World.hasReachedThreshold currentPage world then
-                            ShowGameOver
-                        else
-                            ShowNormalPage page
-            else
-                ShowItemPickup itemId
-
+            not (List.member itemId character.prevInventory)
         Nothing ->
-            case Dict.get currentPage storyline of
-                Nothing ->
-                    ShowPageNotFound currentPage
+            False
 
-                Just page ->
-                    if World.hasReachedThreshold currentPage world then
-                        ShowGameOver
-                    else
-                        ShowNormalPage page
+defaultPageMode : Dict String Page -> WorldState -> String -> ViewMode
+defaultPageMode storyline world page =
+    case Dict.get page storyline of
+        Nothing -> ShowPageNotFound page
+        Just p -> if World.hasReachedThreshold page world then ShowGameOver else ShowNormalPage p
 
 -- ------------------------------------------------------------------
 -- viewPage
@@ -83,5 +83,8 @@ viewPage config locale storyline world character currentPage =
 
                 ShowNormalPage _ ->
                     renderNormalPage config locale storyline world character currentPage
+
+                ShowSecretPage ->
+                    renderSecretPage config locale world character
     in
     novelContainer pageElements

@@ -3,6 +3,7 @@ module Render exposing
     , renderPageNotFound
     , renderGameOver
     , renderNormalPage
+    , renderSecretPage
     )
 
 import Dict exposing (Dict)
@@ -13,7 +14,7 @@ import Veil exposing (Page)
 import Messages exposing (Msg(..), goToPage)
 import Locale exposing (Locale)
 import World exposing (WorldState)
-import Character exposing (Character)
+import Character exposing (Character, allParamsData, hasAtLeastTwoItems)
 
 import UiClasses exposing (..)
 import Items exposing (getItemById)
@@ -69,8 +70,13 @@ renderNormalPage config locale storyline world character currentPage =
         Just page ->
             let
                 debug = Utils.debugData world currentPage
-                params = Utils.paramData character
+                params = Character.allParamsData character
                 gameOver = Utils.isGameOver world currentPage
+                choicesWithSecret =
+                    if currentPage == "start" && Character.hasAtLeastTwoItems character.inventory then
+                        List.append page.choices [ ("Secret Door", "secret") ]
+                    else
+                        page.choices
             in
             [ Components.titleHtml page.title ]
                 ++ Components.contentHtml page.content
@@ -78,4 +84,17 @@ renderNormalPage config locale storyline world character currentPage =
                 ++ Components.paramsInfo locale params
                 ++ Components.inventoryInfo locale character.inventory
                 ++ Components.gameOverInfo locale gameOver
-                ++ [ Components.viewChoices page.choices ]
+                ++ [ Components.viewChoices choicesWithSecret ]
+
+renderSecretPage : Config -> Locale -> WorldState -> Character -> List (Html Msg)
+renderSecretPage config locale world character =
+    let
+        secretTitle = "Secret Room"
+        secretContent = [ "You found the hidden chamber! All your items worked together to reveal this secret." ]
+    in
+        [ Components.titleHtml secretTitle ]
+        ++ Components.contentHtml secretContent
+        ++ Components.inventoryInfo locale character.inventory
+        ++ Components.paramsInfo locale character.params
+        ++ Components.debugInfo config locale (Utils.debugData world "secret")
+        ++ [ Components.choiceButton ("Return", "start") ]

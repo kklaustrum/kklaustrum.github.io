@@ -5,8 +5,7 @@ module Utils exposing
     , markdownUrl
     , isBookUrl
     , formatVisitPath
-    , paramData
-    , formatDebugInfoPure, formatParamsData, formatInventoryData
+    , formatDebugInfoPure, formatInventoryData, formatParamsData
     , debugData, isGameOver  
     )
 
@@ -17,7 +16,7 @@ import Dict exposing (Dict)
 import Set exposing (Set)
 import Locale exposing (Locale, is, en, ru)
 import String exposing (fromInt)
-import Character exposing (Character, getParam)
+import Character exposing (Character, getParamLabel)
 import Messages exposing (Msg(..))
 
 type alias Config =
@@ -101,13 +100,6 @@ isGameOver : WorldState -> String -> Bool
 isGameOver world currentPage =
     World.hasReachedThreshold currentPage world
 
-paramData : Character -> { curiosity : Int, endurance : Int, intellect : Int }
-paramData character =
-    { curiosity = Character.getParam "curiosity" character
-    , endurance = Character.getParam "endurance" character
-    , intellect = Character.getParam "intellect" character
-    }
-
 inventoryData : Character -> List String
 inventoryData character =
     character.inventory
@@ -123,19 +115,22 @@ formatDebugInfoPure locale currentPage visits path =
         , formatVisitPath locale path
         ]
 
-formatParamsData : Locale -> Int -> Int -> Int -> String
-formatParamsData locale curiosity endurance intellect =
+formatParamsData : Locale -> Dict String Int -> String
+formatParamsData locale paramsDict =
     let
-        paramPairs =
-            [ (locale.curiosity, curiosity)
-            , (locale.endurance, endurance)
-            , (locale.intellect, intellect)
-            ]
-                |> List.map (\(label, value) -> 
-                    labelWithSeparator stringHelpers label (String.fromInt value))
-                |> String.join stringHelpers.listSep
+        paramEntries = Dict.toList paramsDict
+        paramStrings = List.map (formatParamEntry locale) paramEntries
+        separatedParams = List.intersperse stringHelpers.listSep paramStrings
+        paramsText = String.join "" separatedParams
     in
-    labelWithSeparator stringHelpers locale.paramsLabel paramPairs
+        labelWithSeparator stringHelpers locale.paramsLabel paramsText
+
+formatParamEntry : Locale -> (String, Int) -> String
+formatParamEntry locale entry =
+    let
+        (key, value) = entry
+    in
+        labelWithSeparator stringHelpers (Character.getParamLabel locale key) (String.fromInt value)
 
 formatInventoryData : Locale -> List String -> String
 formatInventoryData locale items =

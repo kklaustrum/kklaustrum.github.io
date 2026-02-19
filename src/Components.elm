@@ -13,6 +13,7 @@ module Components exposing
     , viewError
     )
 
+import Dict exposing (Dict)
 import Html exposing (Html, button, div, h1, hr, p, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
@@ -70,9 +71,9 @@ debugInfo config locale { currentPage, visits, path } =
             ]
         False -> []
 
-paramsInfo : Locale -> { curiosity : Int, endurance : Int, intellect : Int } -> List (Html Msg)
-paramsInfo locale { curiosity, endurance, intellect } =
-    [ p [ class debugInfoCls ] [ text (Utils.formatParamsData locale curiosity endurance intellect) ] ]
+paramsInfo : Locale -> Dict String Int -> List (Html Msg)
+paramsInfo locale params =
+    [ p [ class debugInfoCls ] [ text (Utils.formatParamsData locale params) ] ]
 
 inventoryInfo : Locale -> List String -> List (Html Msg)
 inventoryInfo locale items =
