@@ -6,12 +6,12 @@ module Utils exposing
     , isBookUrl
     , formatVisitPath
     , formatDebugInfoPure, formatInventoryData, formatParamsData
-    , debugData, isGameOver  
+    , debugData  
     )
 
 import Html exposing (Html, p, hr, text)
 import Html.Attributes exposing (class)
-import World exposing (WorldState, visitCount, hasReachedThreshold, visitPath)
+import World exposing (WorldState, visitCount, visitPath)
 import Dict exposing (Dict)
 import Set exposing (Set)
 import Locale exposing (Locale, is, en, ru)
@@ -95,10 +95,6 @@ debugData world currentPage =
     , visits = World.visitCount currentPage world
     , path = World.visitPath world
     }
-
-isGameOver : WorldState -> String -> Bool
-isGameOver world currentPage =
-    World.hasReachedThreshold currentPage world
 
 inventoryData : Character -> List String
 inventoryData character =

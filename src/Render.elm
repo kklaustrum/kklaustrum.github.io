@@ -20,6 +20,7 @@ import UiClasses exposing (..)
 import Items exposing (getItemById)
 import Components exposing (choiceButton, viewChoices, titleHtml, contentHtml, gameOverInfo, debugInfo)
 import Utils exposing (Config)
+import Rules exposing (standardRules, evaluate, PageMode(..))
 
 -- ------------------------------------------------------------------
 -- Render
@@ -50,7 +51,7 @@ renderPageNotFound config locale currentPage =
 
 renderGameOver : Config -> Locale -> WorldState -> Character -> String -> List (Html Msg)
 renderGameOver config locale world character currentPage =
-    Components.gameOverInfo locale (Utils.isGameOver world currentPage)
+    Components.gameOverInfo locale True
 
 -- -----------------------------------------------------------------
 -- Helpers and renderNormalPage
@@ -64,27 +65,30 @@ choicesHtml : Page -> List (Html Msg)
 choicesHtml page =
     [ viewChoices page.choices ]
 
+renderNormalPage : Config -> Locale -> Dict String Page -> WorldState -> Character -> String -> List (Html Msg)
 renderNormalPage config locale storyline world character currentPage =
     case Dict.get currentPage storyline of
         Nothing -> []
         Just page ->
             let
+                mode = Rules.evaluate Rules.standardRules world character currentPage storyline
+                
+                extraChoices = 
+                    case mode of
+                        Rules.NormalPage choices -> choices
+                        _ -> []
+                        
+                allChoices = page.choices ++ extraChoices
                 debug = Utils.debugData world currentPage
                 params = Character.allParamsData character
-                gameOver = Utils.isGameOver world currentPage
-                choicesWithSecret =
-                    if currentPage == "start" && Character.hasAtLeastTwoItems character.inventory then
-                        List.append page.choices [ ("Secret Door", "secret") ]
-                    else
-                        page.choices
             in
-            [ Components.titleHtml page.title ]
+                [ Components.titleHtml page.title ]
                 ++ Components.contentHtml page.content
                 ++ Components.debugInfo config locale debug
                 ++ Components.paramsInfo locale params
                 ++ Components.inventoryInfo locale character.inventory
-                ++ Components.gameOverInfo locale gameOver
-                ++ [ Components.viewChoices choicesWithSecret ]
+                ++ Components.gameOverInfo locale False
+                ++ [ Components.viewChoices allChoices ]
 
 renderSecretPage : Config -> Locale -> WorldState -> Character -> List (Html Msg)
 renderSecretPage config locale world character =

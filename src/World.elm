@@ -1,16 +1,12 @@
 module World exposing
     ( WorldState
     , initWorld, addVisitIfNew
-    , visitCount, visitPath, hasReachedThreshold
-    , threshold, safePages
+    , visitCount, visitPath
+    , safePages
     )
 
 import Dict exposing (Dict)
 import Set exposing (Set)
-
-threshold : Int
-threshold =
-    3
 
 safePages : Set String
 safePages =
@@ -67,7 +63,3 @@ visitCount pageId world =
 visitPath : WorldState -> List String
 visitPath world =
     List.reverse world.visitHistory
-
-hasReachedThreshold : String -> WorldState -> Bool
-hasReachedThreshold pageId world =
-    not (Set.member pageId safePages) && visitCount pageId world >= threshold

@@ -16,6 +16,7 @@ import Character exposing (Character)
 
 import Render exposing (renderItemPickup, renderPageNotFound, renderGameOver, renderNormalPage, renderSecretPage)
 import Components exposing (novelContainer, viewLoading, viewError)
+import Rules exposing (standardRules, evaluate, PageMode(..))
 
 --------------------------------------------------------------------
 -- ViewMode
@@ -27,39 +28,21 @@ type ViewMode
     | ShowNormalPage Page
     | ShowSecretPage
 
-determineViewMode :
-    Config
-    -> Locale
-    -> Dict String Page
-    -> WorldState
-    -> Character
-    -> String          -- currentPage
-    -> ViewMode
-
+determineViewMode : Config -> Locale -> Dict String Page -> WorldState -> Character -> String -> ViewMode
 determineViewMode config locale storyline world character currentPage =
-    if isSecretPage currentPage character then
-        ShowSecretPage
-    else if isPickupPage currentPage character then
-        ShowItemPickup (Items.getItemFromPage currentPage |> Maybe.withDefault "")
-    else
-        defaultPageMode storyline world currentPage
-
-isSecretPage : String -> Character -> Bool
-isSecretPage page character = page == "secret" && Character.hasAtLeastTwoItems character.inventory
-
-isPickupPage : String -> Character -> Bool
-isPickupPage page character =
-    case Items.getItemFromPage page of
-        Just itemId ->
-            not (List.member itemId character.prevInventory)
-        Nothing ->
-            False
-
-defaultPageMode : Dict String Page -> WorldState -> String -> ViewMode
-defaultPageMode storyline world page =
-    case Dict.get page storyline of
-        Nothing -> ShowPageNotFound page
-        Just p -> if World.hasReachedThreshold page world then ShowGameOver else ShowNormalPage p
+    case Rules.evaluate Rules.standardRules world character currentPage storyline of
+        Rules.NormalPage _ -> 
+            Dict.get currentPage storyline
+                |> Maybe.map ShowNormalPage
+                |> Maybe.withDefault (ShowPageNotFound currentPage)
+        Rules.SecretPage _ -> 
+            ShowSecretPage
+        Rules.GameOverPage -> 
+            ShowGameOver
+        Rules.ItemPickup itemId -> 
+            ShowItemPickup itemId
+        Rules.PageNotFound pid -> 
+            ShowPageNotFound pid
 
 -- ------------------------------------------------------------------
 -- viewPage
