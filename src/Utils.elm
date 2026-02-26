@@ -5,7 +5,7 @@ module Utils exposing
     , markdownUrl
     , isBookUrl
     , formatVisitPath
-    , formatDebugInfoPure, formatInventoryData, formatParamsData
+    , formatDebugInfoPure, formatInventoryData, formatParamsData, formatItemPickup
     , debugData  
     )
 
@@ -133,3 +133,7 @@ formatInventoryData locale items =
     case items of
         [] -> labelWithSeparator stringHelpers locale.inventoryLabel locale.noItemsLabel
         _ -> formatListWithBrackets stringHelpers locale.inventoryLabel items
+
+formatItemPickup : Locale -> String -> String
+formatItemPickup locale itemName =
+    replaceLocalePlaceholder stringHelpers locale.itemPickedUp itemName

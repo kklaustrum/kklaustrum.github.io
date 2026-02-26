@@ -40,9 +40,12 @@ pickupRule : Rule
 pickupRule = 
     { id = "pickup"
     , evaluate = \_ char page ->
-        Items.getItemFromPage page
-            |> Maybe.map (\item -> if List.member item char.prevInventory then Nothing else Just (ItemPickup item))
-            |> Maybe.withDefault Nothing
+        if List.any (\p -> p.pageId == page) Items.pickupPages then
+            Items.getItemFromPage page
+                |> Maybe.map (\item -> if List.member item char.prevInventory then Nothing else Just (ItemPickup item))
+                |> Maybe.withDefault Nothing
+        else
+            Nothing
     }
 
 secretRule : Rule
@@ -71,17 +74,14 @@ standardRules =
     , pickupRule
     ]
 
-evaluate : List Rule -> WorldState -> Character -> String -> Dict String Page -> PageMode
-evaluate rules world char page storyline =
+evaluate : List Rule -> WorldState -> Character -> String -> PageMode
+evaluate rules world char page =
     let
         folder : Rule -> Maybe PageMode -> Maybe PageMode
         folder rule maybeMode =
             case maybeMode of
                 Just mode -> Just mode
                 Nothing -> rule.evaluate world char page
-        
-        defaultMode =
-            if Dict.member page storyline then NormalPage [] else PageNotFound page
     in
-        List.foldl folder Nothing rules
-            |> Maybe.withDefault defaultMode
+    List.foldl folder Nothing rules
+        |> Maybe.withDefault (NormalPage [])

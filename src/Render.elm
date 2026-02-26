@@ -4,101 +4,93 @@ module Render exposing
     , renderGameOver
     , renderNormalPage
     , renderSecretPage
+    , pageLayout
     )
 
+import Html exposing (Html)
 import Dict exposing (Dict)
-import Html exposing (Html, h1, p, div, text)
-import Html.Attributes exposing (class)
-
 import Veil exposing (Page)
-import Messages exposing (Msg(..), goToPage)
+import Messages exposing (Msg(..))
 import Locale exposing (Locale)
 import World exposing (WorldState)
-import Character exposing (Character, allParamsData, hasAtLeastTwoItems)
-
+import Character exposing (Character)
 import UiClasses exposing (..)
+
+import Components exposing (..)
 import Items exposing (getItemById)
-import Components exposing (choiceButton, viewChoices, titleHtml, contentHtml, gameOverInfo, debugInfo)
-import Utils exposing (Config)
-import Rules exposing (standardRules, evaluate, PageMode(..))
+import Utils exposing (Config, debugData, formatItemPickup)
 
 -- ------------------------------------------------------------------
 -- Render
 -- ------------------------------------------------------------------
-renderItemPickup : Config -> Locale -> String -> String -> List (Html Msg)
+type alias HtmlList = List (Html Msg)
+
+type alias PageContent =
+    { title : Html Msg
+    , content : HtmlList
+    , choices : List (String, String)
+    }
+
+pageLayout : Config -> Locale -> WorldState -> Character -> String -> PageContent -> HtmlList
+pageLayout config locale world character currentPage content =
+    let
+        debugInfo = debugData world currentPage
+        debugSections =
+            List.concat
+                [ paramsSection locale (Character.allParamsData character)
+                , inventorySection locale character.inventory
+                , debugSection config.showDebugInfo locale debugInfo.currentPage debugInfo.visits debugInfo.path
+                ]
+    in
+    List.concat
+        [ [ content.title ]
+        , content.content
+        , debugSections
+        , nonEmptyChoices content.choices
+        ]
+
+nonEmptyChoices : List (String, String) -> HtmlList
+nonEmptyChoices choices =
+    if List.isEmpty choices then [] else [ viewChoices choices ]
+
+renderItemPickup : Config -> Locale -> String -> String -> HtmlList
 renderItemPickup config locale itemId currentPage =
     let
-        maybeItem = Items.getItemById itemId
-        itemName =
-            case maybeItem of
-                Just foundItem -> foundItem.name
-                Nothing        -> "???"
-
-        pickupText = String.replace "%s" itemName locale.itemPickedUp
+        itemName = Maybe.withDefault "???" (Maybe.map .name (getItemById itemId))
     in
-    [ h1 [ class pageTitleCls ] [ text locale.inventoryLabel ]
-    , p [ class paragraphCls ] [ text pickupText ]
-    , div [ class centeredChoiceCls ]
-        [ choiceButton ("Ok", currentPage) ]
+    [ titleHtml locale.inventoryLabel
+    , paragraphNode (formatItemPickup locale itemName)
+    , singleChoice "OK" currentPage
     ]
 
-renderPageNotFound : Config -> Locale -> String -> List (Html Msg)
+renderPageNotFound : Config -> Locale -> String -> HtmlList
 renderPageNotFound config locale currentPage =
-    [ h1 [ class errorTitleCls ] [ text locale.pageNotFound ]
-    , p [] [ text ("ID: " ++ currentPage) ]
-    , choiceButton (locale.backToHomeLabel, "start")
+    [ errorTitleNode locale.pageNotFound
+    , paragraphNode ("ID: " ++ currentPage)
+    , singleChoice locale.backToHomeLabel "start"
     ]
 
-renderGameOver : Config -> Locale -> WorldState -> Character -> String -> List (Html Msg)
+renderGameOver : Config -> Locale -> WorldState -> Character -> String -> HtmlList
 renderGameOver config locale world character currentPage =
-    Components.gameOverInfo locale True
+    [ gameOverNode locale.gameOver ]
 
--- -----------------------------------------------------------------
--- Helpers and renderNormalPage
--- -----------------------------------------------------------------
-
-debugHtml : Config -> Locale -> WorldState -> Character -> String -> List (Html Msg)
-debugHtml config locale world character currentPage =
-    Components.debugInfo config locale (Utils.debugData world currentPage)
-
-choicesHtml : Page -> List (Html Msg)
-choicesHtml page =
-    [ viewChoices page.choices ]
-
-renderNormalPage : Config -> Locale -> Dict String Page -> WorldState -> Character -> String -> List (Html Msg)
-renderNormalPage config locale storyline world character currentPage =
-    case Dict.get currentPage storyline of
-        Nothing -> []
-        Just page ->
-            let
-                mode = Rules.evaluate Rules.standardRules world character currentPage storyline
-                
-                extraChoices = 
-                    case mode of
-                        Rules.NormalPage choices -> choices
-                        _ -> []
-                        
-                allChoices = page.choices ++ extraChoices
-                debug = Utils.debugData world currentPage
-                params = Character.allParamsData character
-            in
-                [ Components.titleHtml page.title ]
-                ++ Components.contentHtml page.content
-                ++ Components.debugInfo config locale debug
-                ++ Components.paramsInfo locale params
-                ++ Components.inventoryInfo locale character.inventory
-                ++ Components.gameOverInfo locale False
-                ++ [ Components.viewChoices allChoices ]
-
-renderSecretPage : Config -> Locale -> WorldState -> Character -> List (Html Msg)
+renderSecretPage : Config -> Locale -> WorldState -> Character -> HtmlList
 renderSecretPage config locale world character =
+    [ titleHtml "Secret Room"
+    , paragraphNode "You found the hidden chamber..."
+    , singleChoice locale.backToHomeLabel "start"
+    ]
+
+-- -----------------------------------------------------------------
+-- renderNormalPage
+-- -----------------------------------------------------------------
+renderNormalPage config locale page world character currentPage extraChoices =
     let
-        secretTitle = "Secret Room"
-        secretContent = [ "You found the hidden chamber! All your items worked together to reveal this secret." ]
+        (regularExtra, secretExtra) = 
+            List.partition (\(l,_) -> l /= "Secret Door") extraChoices
     in
-        [ Components.titleHtml secretTitle ]
-        ++ Components.contentHtml secretContent
-        ++ Components.inventoryInfo locale character.inventory
-        ++ Components.paramsInfo locale character.params
-        ++ Components.debugInfo config locale (Utils.debugData world "secret")
-        ++ [ Components.choiceButton ("Return", "start") ]
+    pageLayout config locale world character currentPage
+        { title = titleHtml page.title
+        , content = contentHtml page.content
+        , choices = page.choices ++ regularExtra ++ secretExtra
+        }
