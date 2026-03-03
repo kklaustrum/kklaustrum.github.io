@@ -76,8 +76,8 @@ renderGameOver config locale world character currentPage =
 
 renderSecretPage : Config -> Locale -> WorldState -> Character -> HtmlList
 renderSecretPage config locale world character =
-    [ titleHtml "Secret Room"
-    , paragraphNode "You found the hidden chamber..."
+    [ titleHtml locale.someRoomHeader
+    , paragraphNode locale.someRoomTxt
     , singleChoice locale.backToHomeLabel "start"
     ]
 

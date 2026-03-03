@@ -22,6 +22,8 @@ type alias Locale =
     , endurance : String
     , intellect : String
     , itemPickedUp : String
+    , someRoomHeader : String
+    , someRoomTxt : String
     }
 
 is =
@@ -46,6 +48,8 @@ is =
     , endurance = "Úthald"
     , intellect = "Greind"
     , itemPickedUp = "Fann hlut: %s"
+    , someRoomHeader = "Búið herbergi"
+    , someRoomTxt = "Þú fannst leynilega herbergið! Öll þín hlutir unnu saman til að afhjúpa þessa leyndarmál."
     }
 
 en =
@@ -70,6 +74,8 @@ en =
     , endurance = "Endurance"
     , intellect = "Intellect"
     , itemPickedUp = "Picked up item: %s"
+    , someRoomHeader = "Generated Room"
+    , someRoomTxt = "You found the hidden chamber! All your items worked together to reveal this secret."
     }
 
 ru =
@@ -93,5 +99,7 @@ ru =
     , curiosity = "Любознательность"
     , endurance = "Выносливость"
     , intellect = "Интеллект"
-    , itemPickedUp = "Получена вещь %s"
+    , itemPickedUp = "Получена вещь: %s"
+    , someRoomHeader = "Сгенерированное"
+    , someRoomTxt = "Найдено спрятанное пространство! Ваши вещи сработали, чтобы открыть этот секрет."
     }

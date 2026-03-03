@@ -2,15 +2,20 @@ module Components exposing
     ( novelContainer
     , choiceButton
     , viewChoices
-    , viewParagraphs
     , titleHtml
     , contentHtml
-    , debugInfo
-    , gameOverInfo
-    , paramsInfo
-    , inventoryInfo
+    , viewParagraphs
     , viewLoading
     , viewError
+    , debugSection
+    , paramsSection
+    , inventorySection
+    , gameOverSection
+    , paragraphNode
+    , errorTitleNode  
+    , gameOverNode
+    , singleChoice
+    , textNode
     )
 
 import Dict exposing (Dict)
@@ -19,9 +24,9 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 
 import Locale exposing (Locale)
+import Messages exposing (Msg(..))
 import UiClasses exposing (..)
-import Messages exposing (Msg(..), goToPage)
-import Utils exposing (Config, formatDebugInfoPure, formatParamsData, formatInventoryData)
+import Utils exposing (formatParamsData, formatInventoryData, formatDebugInfoPure)
 
 -- -----------------------------------------------------------------
 -- UI components
@@ -59,28 +64,38 @@ titleHtml title =
     h1 [ class pageTitleCls ] [ text title ]
 
 contentHtml : List String -> List (Html Msg)
-contentHtml paragraphs =
-    List.map (\para -> div [ class pageContentCls ] [ p [ class paragraphCls ] [ text para ] ]) paragraphs
+contentHtml paragraphs = 
+    List.map paragraphNode paragraphs
 
-debugInfo config locale { currentPage, visits, path } =
-    case config.showDebugInfo of
-        True ->
-            [ hr [ class debugDividerCls ] []
-            , p [ class debugInfoCls ] 
-                [ text (Utils.formatDebugInfoPure locale currentPage visits path) ]
-            ]
-        False -> []
-
-paramsInfo : Locale -> Dict String Int -> List (Html Msg)
-paramsInfo locale params =
-    [ p [ class debugInfoCls ] [ text (Utils.formatParamsData locale params) ] ]
-
-inventoryInfo : Locale -> List String -> List (Html Msg)
-inventoryInfo locale items =
-    [ p [ class debugInfoCls ] [ text (Utils.formatInventoryData locale items) ] ]
-
-gameOverInfo : Locale -> Bool -> List (Html Msg)
-gameOverInfo locale isGameOver =
-    if isGameOver then
-        [ p [ class gameOverCls ] [ text locale.gameOver ] ]
+debugSection : Bool -> Locale -> String -> Int -> List String -> List (Html msg)
+debugSection showDebug locale currentPage visits path =
+    if showDebug then
+        [ hr [ class debugDividerCls ] []
+        , p [ class debugInfoCls ] [ text (formatDebugInfoPure locale currentPage visits path) ]
+        ]
     else []
+
+paramsSection : Locale -> Dict String Int -> List (Html msg)
+paramsSection locale params = [ p [ class debugInfoCls ] [ text (formatParamsData locale params) ] ]
+
+inventorySection : Locale -> List String -> List (Html msg)
+inventorySection locale items = [ p [ class debugInfoCls ] [ text (formatInventoryData locale items) ] ]
+
+gameOverSection : Locale -> Bool -> List (Html msg)
+gameOverSection locale isGameOver =
+    if isGameOver then [ p [ class gameOverCls ] [ text locale.gameOver ] ] else []
+
+singleChoice : String -> String -> Html Msg
+singleChoice label pageId = div [ class centeredChoiceCls ] [ choiceButton (label, pageId) ]
+
+textNode : String -> Html msg
+textNode content = text content
+
+paragraphNode : String -> Html msg
+paragraphNode content = p [ class paragraphCls ] [ textNode content ]
+
+errorTitleNode : String -> Html msg
+errorTitleNode content = h1 [ class errorTitleCls ] [ textNode content ]
+
+gameOverNode : String -> Html msg
+gameOverNode content = p [ class gameOverCls ] [ textNode content ]
