@@ -9,12 +9,12 @@ module Character exposing
     , shouldShowPickup
     , updatePrevInventory
     , allParamsData
-    , getParamLabel
     , hasAtLeastTwoItems
     )
 
 import Dict exposing (Dict)
 import Items exposing (Item, getItemById, getItemEffects)
+import Params exposing (Param(..), paramToString, defaultValues)
 import Locale exposing (Locale, is, en, ru)
 
 type alias Character =
@@ -24,31 +24,17 @@ type alias Character =
     }
 
 type alias ParamConfig =
-    { key : String
+    { key : Param
     , default : Int
     , labelField : Locale -> String
     }
-
-allParams : List ParamConfig
-allParams =
-    [ { key = "curiosity", default = 5, labelField = \l -> l.curiosity }
-    , { key = "endurance", default = 7, labelField = \l -> l.endurance }
-    , { key = "intellect", default = 9, labelField = \l -> l.intellect }
-    ]
 
 allParamsData : Character -> Dict String Int
 allParamsData character = character.params
 
 initParams : Dict String Int
 initParams =
-    Dict.fromList (List.map (\p -> (p.key, p.default)) allParams)
-
-getParamLabel : Locale -> String -> String
-getParamLabel locale key =
-    List.filter (\p -> p.key == key) allParams
-        |> List.head
-        |> Maybe.map (\config -> config.labelField locale)
-        |> Maybe.withDefault key
+    Dict.fromList (List.map (\( param, value ) -> ( paramToString param, value )) Params.defaultValues)
 
 initCharacter : Character
 initCharacter =
@@ -64,15 +50,13 @@ addItem itemId character =
 applyItemEffects : String -> Character -> Character
 applyItemEffects itemId character =
     let
-        withParams : Dict String Int -> Character
-        withParams newParams = 
-            { character | params = newParams }
+        newParams =
+            Items.getItemById itemId
+                |> Maybe.map getItemEffects
+                |> Maybe.map (Dict.foldl updateParam character.params)
+                |> Maybe.withDefault character.params
     in
-        Items.getItemById itemId
-            |> Maybe.map getItemEffects
-            |> Maybe.map (Dict.foldl updateParam character.params)
-            |> Maybe.withDefault character.params
-            |> withParams
+    { character | params = newParams }
 
 updateParam : comparable -> Int -> Dict comparable Int -> Dict comparable Int
 updateParam key delta params =

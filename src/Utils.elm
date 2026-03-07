@@ -16,8 +16,8 @@ import Dict exposing (Dict)
 import Set exposing (Set)
 import Locale exposing (Locale, is, en, ru)
 import String exposing (fromInt)
-import Character exposing (Character, getParamLabel)
 import Messages exposing (Msg(..))
+import Params exposing (stringToParam, getParamLabel)
 
 type alias Config =
     { defaultLocale : Locale
@@ -96,10 +96,6 @@ debugData world currentPage =
     , path = World.visitPath world
     }
 
-inventoryData : Character -> List String
-inventoryData character =
-    character.inventory
-
 formatDebugInfoPure : Locale -> String -> Int -> List String -> String
 formatDebugInfoPure locale currentPage visits path =
     let
@@ -121,12 +117,15 @@ formatParamsData locale paramsDict =
     in
         labelWithSeparator stringHelpers locale.paramsLabel paramsText
 
-formatParamEntry : Locale -> (String, Int) -> String
-formatParamEntry locale entry =
+formatParamEntry : Locale -> ( String, Int ) -> String
+formatParamEntry locale ( key, value ) =
     let
-        (key, value) = entry
+        label =
+            stringToParam key
+                |> Maybe.map (Params.getParamLabel locale)
+                |> Maybe.withDefault key
     in
-        labelWithSeparator stringHelpers (Character.getParamLabel locale key) (String.fromInt value)
+    labelWithSeparator stringHelpers label (String.fromInt value)
 
 formatInventoryData : Locale -> List String -> String
 formatInventoryData locale items =

@@ -17,8 +17,8 @@ import Character exposing (Character)
 import UiClasses exposing (..)
 
 import Components exposing (..)
-import Items exposing (getItemById)
 import Utils exposing (Config, debugData, formatItemPickup)
+import Rules exposing (SecretContent)
 
 -- ------------------------------------------------------------------
 -- Render
@@ -54,10 +54,7 @@ nonEmptyChoices choices =
     if List.isEmpty choices then [] else [ viewChoices choices ]
 
 renderItemPickup : Config -> Locale -> String -> String -> HtmlList
-renderItemPickup config locale itemId currentPage =
-    let
-        itemName = Maybe.withDefault "???" (Maybe.map .name (getItemById itemId))
-    in
+renderItemPickup config locale itemName currentPage =
     [ titleHtml locale.inventoryLabel
     , paragraphNode (formatItemPickup locale itemName)
     , singleChoice "OK" currentPage
@@ -74,23 +71,19 @@ renderGameOver : Config -> Locale -> WorldState -> Character -> String -> HtmlLi
 renderGameOver config locale world character currentPage =
     [ gameOverNode locale.gameOver ]
 
-renderSecretPage : Config -> Locale -> WorldState -> Character -> HtmlList
-renderSecretPage config locale world character =
-    [ titleHtml locale.someRoomHeader
-    , paragraphNode locale.someRoomTxt
-    , singleChoice locale.backToHomeLabel "start"
+renderSecretPage : Config -> Locale -> SecretContent -> HtmlList
+renderSecretPage config locale secretContent =
+    [ titleHtml (secretContent.title locale)
+    , paragraphNode (secretContent.content locale)
+    , viewChoices (secretContent.choices locale)
     ]
 
 -- -----------------------------------------------------------------
 -- renderNormalPage
 -- -----------------------------------------------------------------
 renderNormalPage config locale page world character currentPage extraChoices =
-    let
-        (regularExtra, secretExtra) = 
-            List.partition (\(l,_) -> l /= "Secret Door") extraChoices
-    in
     pageLayout config locale world character currentPage
         { title = titleHtml page.title
         , content = contentHtml page.content
-        , choices = page.choices ++ regularExtra ++ secretExtra
+        , choices = page.choices ++ extraChoices
         }

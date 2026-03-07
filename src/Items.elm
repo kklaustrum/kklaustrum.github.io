@@ -10,38 +10,48 @@ module Items exposing
     )
 
 import Dict exposing (Dict)
+import Params exposing (Param(..), paramToString)
 
 type alias PageItem =
     { pageId : String
     , itemId : String
     }
 
+type alias ItemEffects = Dict String Int
+
 type alias Item =
     { name : String
-    , buffs : Dict String Int
-    , penalties : Dict String Int
+    , buffs : ItemEffects
+    , penalties : ItemEffects
     }
+
+seedItem : String -> Item
+seedItem name =
+    { name = name, buffs = Dict.empty, penalties = Dict.empty }
+
+withBuff : Param -> Int -> Item -> Item
+withBuff param value i =
+    { i | buffs = Dict.insert (paramToString param) value i.buffs }
+
+withPenalty : Param -> Int -> Item -> Item
+withPenalty param value i =
+    { i | penalties = Dict.insert (paramToString param) value i.penalties }
 
 firstItem : Item
-firstItem = 
-    { name = "firstItem"
-    , buffs = Dict.fromList [ ("endurance", 1) ]
-    , penalties = Dict.empty
-    }
+firstItem =
+    seedItem "firstItem"
+        |> withBuff Endurance 1
 
 secondItem : Item
-secondItem = 
-    { name = "secondItem"
-    , buffs = Dict.fromList [ ("endurance", 3) ]
-    , penalties = Dict.fromList [ ("curiosity", 2) ]
-    }
+secondItem =
+    seedItem "secondItem"
+        |> withBuff Endurance 3
+        |> withPenalty Curiosity 2
 
 thirdItem : Item
-thirdItem = 
-    { name = "thirdItem"
-    , buffs = Dict.fromList [ ("intellect", 1) ]
-    , penalties = Dict.empty
-    }
+thirdItem =
+    seedItem "thirdItem"
+        |> withBuff Intellect 1
 
 availableItems : List Item
 availableItems = [ firstItem, secondItem, thirdItem ]
@@ -53,25 +63,28 @@ pickupPages =
     , { pageId = "roguelike", itemId = "thirdItem" }
     ]
 
-pageDict : Dict String PageItem
-pageDict = Dict.fromList (List.map (\p -> (p.pageId, p)) pickupPages)
+pageDict : Dict String String
+pageDict =
+    Dict.fromList (List.map (\p -> ( p.pageId, p.itemId )) pickupPages)
 
 getItemFromPage : String -> Maybe String
-getItemFromPage pageId = Dict.get pageId pageDict |> Maybe.map .itemId
+getItemFromPage pageId =
+    Dict.get pageId pageDict
+
+itemsDict : Dict String Item
+itemsDict =
+    Dict.fromList (List.map (\i -> ( i.name, i )) availableItems)
 
 getItemById : String -> Maybe Item
 getItemById itemId =
-    List.filter (\item -> item.name == itemId) availableItems
-        |> List.head
+    Dict.get itemId itemsDict
 
-negatePenalty : a -> Int -> Int
-negatePenalty _ value = 
-    negate value
-
-getItemEffects : Item -> Dict String Int
+getItemEffects : Item -> ItemEffects
 getItemEffects item =
-    Dict.union item.buffs 
-        (Dict.map negatePenalty item.penalties)
+    let
+        penalties = Dict.map (\_ value -> -value) item.penalties
+    in
+    Dict.union item.buffs penalties
 
 addToInventory : String -> List String -> List String
 addToInventory itemId inventory =

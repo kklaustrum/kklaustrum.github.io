@@ -22,14 +22,14 @@ viewPage config locale storyline world character currentPage =
                 NormalPage extraChoices -> 
                     getNormalPageOrNotFound config locale storyline world character currentPage extraChoices
                 
-                SecretPage _ -> 
-                    renderSecretPage config locale world character
+                SecretPage secretContent ->
+                    renderSecretPage config locale secretContent
                 
                 GameOverPage -> 
                     renderGameOver config locale world character currentPage
                 
-                ItemPickup itemId -> 
-                    renderItemPickup config locale itemId currentPage
+                ItemPickup itemName ->
+                    renderItemPickup config locale itemName currentPage
                 
                 PageNotFound _ -> 
                     renderPageNotFound config locale currentPage
