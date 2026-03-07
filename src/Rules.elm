@@ -57,7 +57,7 @@ secretDoors =
     , { fromPage = "roguelike"
       , toPage = "anothersecret"
       , label = "Hidden Passage"
-      , condition = \char -> List.length char.inventory >= 1
+      , condition = \char -> List.length char.inventory >= 3
       , title = \_ -> "Another Secret Room"
       , content = \_ -> "You found a hidden passage!"
       , choices = \_ -> [ ( "Go back", "roguelike" ) ]
