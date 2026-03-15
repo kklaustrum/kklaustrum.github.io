@@ -3,6 +3,7 @@ module World exposing
     , initWorld, addVisitIfNew
     , visitCount, visitPath
     , safePages
+    , isGameOverCandidate
     )
 
 import Dict exposing (Dict)
@@ -63,3 +64,8 @@ visitCount pageId world =
 visitPath : WorldState -> List String
 visitPath world =
     List.reverse world.visitHistory
+
+isGameOverCandidate : String -> WorldState -> Int -> Bool
+isGameOverCandidate page world threshold =
+    visitCount page world >= threshold
+        && not (Set.member page safePages)

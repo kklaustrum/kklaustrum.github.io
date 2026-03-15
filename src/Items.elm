@@ -5,6 +5,7 @@ module Items exposing
     , pickupPages
     , getItemFromPage
     , getItemById
+    , getItemName
     , getItemEffects
     , addToInventory
     )
@@ -78,6 +79,12 @@ itemsDict =
 getItemById : String -> Maybe Item
 getItemById itemId =
     Dict.get itemId itemsDict
+
+getItemName : String -> String
+getItemName itemId =
+    getItemById itemId
+        |> Maybe.map .name
+        |> Maybe.withDefault "???"
 
 getItemEffects : Item -> ItemEffects
 getItemEffects item =

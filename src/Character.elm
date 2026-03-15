@@ -9,7 +9,10 @@ module Character exposing
     , shouldShowPickup
     , updatePrevInventory
     , allParamsData
-    , hasAtLeastTwoItems
+    , hasAtLeastItems
+    , hasPickedUp
+    , hasItem
+    , hasParam
     )
 
 import Dict exposing (Dict)
@@ -95,10 +98,22 @@ shouldShowPickup character pageId =
         |> Maybe.map (\itemId -> List.member itemId character.inventory |> not)
         |> Maybe.withDefault False
 
+hasPickedUp : String -> Character -> Bool
+hasPickedUp itemId char =
+    List.member itemId char.prevInventory
+
 updatePrevInventory : Character -> Character
 updatePrevInventory character =
     { character | prevInventory = character.inventory }
 
-hasAtLeastTwoItems : List String -> Bool
-hasAtLeastTwoItems inventory =
-    List.length inventory >= 2
+hasAtLeastItems : Int -> Character -> Bool
+hasAtLeastItems n char =
+    List.length char.inventory >= n
+
+hasItem : String -> Character -> Bool
+hasItem itemId char =
+    List.member itemId char.inventory
+
+hasParam : String -> Int -> Character -> Bool
+hasParam key minValue char =
+    getParam key char >= minValue

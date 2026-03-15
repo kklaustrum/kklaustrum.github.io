@@ -18,7 +18,7 @@ import UiClasses exposing (..)
 
 import Components exposing (..)
 import Utils exposing (Config, debugData, formatItemPickup)
-import Rules exposing (SecretContent)
+import Types exposing (SecretContent)
 
 -- ------------------------------------------------------------------
 -- Render

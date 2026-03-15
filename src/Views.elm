@@ -10,7 +10,8 @@ import Character exposing (Character)
 import Veil exposing (Page)
 import Messages exposing (Msg(..))
 import Render exposing (..)
-import Rules exposing (standardRules, evaluate, PageMode(..))
+import Rules exposing (standardRules, evaluate)
+import Types exposing (PageMode(..))
 
 viewPage : Config -> Locale -> Dict String Page -> WorldState -> Character -> String -> Html Msg
 viewPage config locale storyline world character currentPage =
