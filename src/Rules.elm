@@ -36,10 +36,10 @@ pickupRule =
             |> Maybe.andThen (toPickupMode char)
     }
 
-standardRules : List Rule
-standardRules = 
-    [ passageRule
-    , gameOverRule 3
+standardRules : Locale -> List Rule
+standardRules locale =
+    [ Passages.passageRule locale
+    , gameOverRule 5
     , pickupRule
     ]
 
@@ -47,7 +47,6 @@ standardRules =
 evaluate : List Rule -> WorldState -> Character -> String -> PageMode
 evaluate rules world char page =
     let
-        folder : Rule -> Maybe PageMode -> Maybe PageMode
         folder rule maybeMode =
             case maybeMode of
                 Just mode -> Just mode

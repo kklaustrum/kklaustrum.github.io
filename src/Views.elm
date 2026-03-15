@@ -16,7 +16,7 @@ import Types exposing (PageMode(..))
 viewPage : Config -> Locale -> Dict String Page -> WorldState -> Character -> String -> Html Msg
 viewPage config locale storyline world character currentPage =
     let
-        pageResult = evaluate standardRules world character currentPage
+        pageResult = evaluate (standardRules locale) world character currentPage
         
         content =
             case pageResult of

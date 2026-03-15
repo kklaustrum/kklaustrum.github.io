@@ -41,13 +41,13 @@ withPenalty param value i =
 firstItem : Item
 firstItem =
     seedItem "firstItem"
-        |> withBuff Endurance 1
+        |> withBuff Endurance 3
 
 secondItem : Item
 secondItem =
     seedItem "secondItem"
-        |> withBuff Endurance 3
-        |> withPenalty Curiosity 2
+        |> withBuff Curiosity 1
+        |> withPenalty Intellect 1
 
 thirdItem : Item
 thirdItem =

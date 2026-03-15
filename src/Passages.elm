@@ -1,6 +1,6 @@
 module Passages exposing (passageRule)
 
-import Types exposing (Rule, Condition, PageMode(..), SecretContent, LocaleString, LocaleChoices)
+import Types exposing (Rule, Condition, PageMode(..), SecretContent, LocaleChoices, ExtraChoices)
 import Character exposing (Character)
 import Locale exposing (Locale)
 import Conditions exposing (Condition(..), evaluate)
@@ -11,49 +11,64 @@ type alias Passage =
     , toPage : String
     , label : String
     , condition : Condition
-    , title : LocaleString
-    , content : LocaleString
-    , choices : LocaleChoices
+    , title : String
+    , content : String
+    , choices : ExtraChoices
     }
 
-passage : String -> String -> String -> Passage
-passage from to label =
-    { fromPage = from
-    , toPage = to
-    , label = label
+passage : Locale -> { from : String, to : String, label : String } -> Passage
+passage locale args =
+    { fromPage = args.from
+    , toPage = args.to
+    , label = args.label
     , condition = HasAtLeastItems 0
-    , title = always ""
-    , content = always ""
-    , choices = always []
+    , title = ""
+    , content = ""
+    , choices = backTo locale args.from
     }
 
 withCondition : Condition -> Passage -> Passage
 withCondition cond p =
     { p | condition = cond }
 
-withContent : LocaleString -> LocaleString -> LocaleChoices -> Passage -> Passage
-withContent title content choices p =
-    { p | title = title, content = content, choices = choices }
+withTitle : String -> Passage -> Passage
+withTitle title p =
+    { p | title = title }
 
-backTo : String -> LocaleChoices
-backTo page locale =
+withBody : String -> Passage -> Passage
+withBody content p =
+    { p | content = content }
+
+backTo : Locale -> String -> ExtraChoices
+backTo locale page =
     [ ( locale.backToHomeLabel, page ) ]
 
-passages : List Passage
-passages =
-    [ passage "start" "secret" "Secret Door"
+secretEntrance : Locale -> Passage
+secretEntrance locale =
+    passage locale { from = "start", to = "secret", label = "Secret Door" }
         |> withCondition (HasAtLeastItems 2)
-        |> withContent
-            .someRoomHeader
-            .someRoomTxt
-            (backTo "start")
+        |> withTitle locale.someRoomHeader
+        |> withBody locale.someRoomTxt
 
-    , passage "roguelike" "anothersecret" "Hidden Passage"
+hiddenPassage : Locale -> Passage
+hiddenPassage locale =
+    passage locale { from = "roguelike", to = "anothersecret", label = "E10" }
         |> withCondition (HasParam Endurance 10)
-        |> withContent
-            (always "Another Secret Room")
-            (always "You found a hidden passage!")
-            (always [ ( "Go back", "roguelike" ) ])
+        |> withTitle "Another Secret Room"
+        |> withBody "You found a hidden passage!"
+
+testPassage : Locale -> Passage
+testPassage locale =
+    passage locale { from = "roguelike", to = "thirdsecret", label = "С6" }
+        |> withCondition (HasParam Curiosity 6)
+        |> withTitle locale.someRoomHeader
+        |> withBody locale.someRoomTxt
+
+passages : Locale -> List Passage
+passages locale =
+    [ secretEntrance locale
+    , hiddenPassage locale
+    , testPassage locale
     ]
 
 toSecretContent : Passage -> SecretContent
@@ -71,30 +86,36 @@ isVisiblePassage : Character -> String -> Passage -> Bool
 isVisiblePassage char page p =
     p.fromPage == page && Conditions.evaluate p.condition char
 
-firstMatchingPassage : List Passage -> Character -> String -> Maybe PageMode
-firstMatchingPassage ps char page =
-    case ps of
-        [] ->
+collectPassages : List Passage -> Character -> String -> Maybe PageMode
+collectPassages ps char page =
+    let
+        isSecret = isSecretEntry char page
+        isVisible = isVisiblePassage char page
+
+        secretPage =
+            ps
+                |> List.filter isSecret
+                |> List.head
+                |> Maybe.map (SecretPage << toSecretContent)
+
+        extraChoices =
+            ps
+                |> List.filter isVisible
+                |> List.map (\p -> ( p.label, p.toPage ))
+    in
+    case ( secretPage, extraChoices ) of
+        ( Just secret, _ ) ->
+            Just secret
+
+        ( Nothing, [] ) ->
             Nothing
 
-        p :: rest ->
-            let
-                isSecret = isSecretEntry char page
-                isVisible = isVisiblePassage char page
-            in
-            case ( isSecret p, isVisible p ) of
-                ( True, _ ) ->
-                    Just (SecretPage (toSecretContent p))
+        ( Nothing, choices ) ->
+            Just (NormalPage choices)
 
-                ( _, True ) ->
-                    Just (NormalPage [ ( p.label, p.toPage ) ])
-
-                _ ->
-                    firstMatchingPassage rest char page
-
-passageRule : Rule
-passageRule =
+passageRule : Locale -> Rule
+passageRule locale =
     { id = "passage"
     , evaluate = \_ char page ->
-        firstMatchingPassage passages char page
+        collectPassages (passages locale) char page
     }

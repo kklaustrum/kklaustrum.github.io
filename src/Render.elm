@@ -18,7 +18,7 @@ import UiClasses exposing (..)
 
 import Components exposing (..)
 import Utils exposing (Config, debugData, formatItemPickup)
-import Types exposing (SecretContent)
+import Types exposing (SecretContent, ExtraChoices)
 
 -- ------------------------------------------------------------------
 -- Render
@@ -49,7 +49,7 @@ pageLayout config locale world character currentPage content =
         , nonEmptyChoices content.choices
         ]
 
-nonEmptyChoices : List (String, String) -> HtmlList
+nonEmptyChoices : ExtraChoices -> HtmlList
 nonEmptyChoices choices =
     if List.isEmpty choices then [] else [ viewChoices choices ]
 
@@ -73,9 +73,9 @@ renderGameOver config locale world character currentPage =
 
 renderSecretPage : Config -> Locale -> SecretContent -> HtmlList
 renderSecretPage config locale secretContent =
-    [ titleHtml (secretContent.title locale)
-    , paragraphNode (secretContent.content locale)
-    , viewChoices (secretContent.choices locale)
+    [ titleHtml secretContent.title
+    , paragraphNode secretContent.content
+    , viewChoices secretContent.choices
     ]
 
 -- -----------------------------------------------------------------

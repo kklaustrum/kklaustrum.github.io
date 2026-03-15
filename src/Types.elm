@@ -19,9 +19,9 @@ type alias LocaleChoices = Locale -> List ( String, String )
 type alias ExtraChoices = List ( String, String )
 
 type alias SecretContent =
-    { title : LocaleString
-    , content : LocaleString
-    , choices : LocaleChoices
+    { title : String
+    , content : String
+    , choices : ExtraChoices
     }
 
 type PageMode
