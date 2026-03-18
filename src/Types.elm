@@ -6,11 +6,21 @@ module Types exposing
     , Condition
     , LocaleString
     , LocaleChoices
+    , RenderContext
     )
 
 import Locale exposing (Locale)
 import World exposing (WorldState)
 import Character exposing (Character)
+import Utils exposing (Config)
+
+type alias RenderContext =
+    { config : Config
+    , locale : Locale
+    , world : WorldState
+    , character : Character
+    , currentPage : String
+    }
 
 type alias LocaleString = Locale -> String
 

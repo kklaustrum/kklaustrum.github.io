@@ -3,6 +3,7 @@ module Veil exposing
     , Page
     , Book
     , storyline
+    , getPage
     , ResourceError(..)
     )
 
@@ -21,6 +22,10 @@ type Book
 
 type ResourceError
     = HttpError Error
+
+getPage : String -> Book -> Maybe Page
+getPage pageId book =
+    Dict.get pageId (storyline book)
 
 storyline : Book -> Dict String Page
 storyline book =

@@ -5,24 +5,20 @@ module Render exposing
     , renderNormalPage
     , renderSecretPage
     , pageLayout
+    , pageContainer
     )
 
 import Html exposing (Html)
-import Dict exposing (Dict)
 import Veil exposing (Page)
 import Messages exposing (Msg(..))
 import Locale exposing (Locale)
 import World exposing (WorldState)
 import Character exposing (Character)
 import UiClasses exposing (..)
-
 import Components exposing (..)
 import Utils exposing (Config, debugData, formatItemPickup)
-import Types exposing (SecretContent, ExtraChoices)
+import Types exposing (SecretContent, ExtraChoices, RenderContext)
 
--- ------------------------------------------------------------------
--- Render
--- ------------------------------------------------------------------
 type alias HtmlList = List (Html Msg)
 
 type alias PageContent =
@@ -31,15 +27,19 @@ type alias PageContent =
     , choices : List (String, String)
     }
 
-pageLayout : Config -> Locale -> WorldState -> Character -> String -> PageContent -> HtmlList
-pageLayout config locale world character currentPage content =
+pageContainer : HtmlList -> Html Msg
+pageContainer content =
+    Components.novelContainer content
+
+pageLayout : RenderContext -> PageContent -> HtmlList
+pageLayout ctx content =
     let
-        debugInfo = debugData world currentPage
+        debugInfo = debugData ctx.world ctx.currentPage
         debugSections =
             List.concat
-                [ paramsSection locale (Character.allParamsData character)
-                , inventorySection locale character.inventory
-                , debugSection config.showDebugInfo locale debugInfo.currentPage debugInfo.visits debugInfo.path
+                [ paramsSection ctx.locale (Character.allParamsData ctx.character)
+                , inventorySection ctx.locale ctx.character.inventory
+                , debugSection ctx.config.showDebugInfo ctx.locale debugInfo.currentPage debugInfo.visits debugInfo.path
                 ]
     in
     List.concat
@@ -53,36 +53,34 @@ nonEmptyChoices : ExtraChoices -> HtmlList
 nonEmptyChoices choices =
     if List.isEmpty choices then [] else [ viewChoices choices ]
 
-renderItemPickup : Config -> Locale -> String -> String -> HtmlList
-renderItemPickup config locale itemName currentPage =
-    [ titleHtml locale.inventoryLabel
-    , paragraphNode (formatItemPickup locale itemName)
-    , singleChoice "OK" currentPage
+renderItemPickup : RenderContext -> String -> HtmlList
+renderItemPickup ctx itemName =
+    [ titleHtml ctx.locale.inventoryLabel
+    , paragraphNode (formatItemPickup ctx.locale itemName)
+    , singleChoice "OK" ctx.currentPage
     ]
 
-renderPageNotFound : Config -> Locale -> String -> HtmlList
-renderPageNotFound config locale currentPage =
-    [ errorTitleNode locale.pageNotFound
-    , paragraphNode ("ID: " ++ currentPage)
-    , singleChoice locale.backToHomeLabel "start"
+renderPageNotFound : RenderContext -> HtmlList
+renderPageNotFound ctx =
+    [ errorTitleNode ctx.locale.pageNotFound
+    , paragraphNode ("ID: " ++ ctx.currentPage)
+    , singleChoice ctx.locale.backToHomeLabel "start"
     ]
 
-renderGameOver : Config -> Locale -> WorldState -> Character -> String -> HtmlList
-renderGameOver config locale world character currentPage =
-    [ gameOverNode locale.gameOver ]
+renderGameOver : RenderContext -> HtmlList
+renderGameOver ctx =
+    [ gameOverNode ctx.locale.gameOver ]
 
-renderSecretPage : Config -> Locale -> SecretContent -> HtmlList
-renderSecretPage config locale secretContent =
+renderSecretPage : RenderContext -> SecretContent -> HtmlList
+renderSecretPage ctx secretContent =
     [ titleHtml secretContent.title
     , paragraphNode secretContent.content
     , viewChoices secretContent.choices
     ]
 
--- -----------------------------------------------------------------
--- renderNormalPage
--- -----------------------------------------------------------------
-renderNormalPage config locale page world character currentPage extraChoices =
-    pageLayout config locale world character currentPage
+renderNormalPage : RenderContext -> Page -> ExtraChoices -> HtmlList
+renderNormalPage ctx page extraChoices =
+    pageLayout ctx
         { title = titleHtml page.title
         , content = contentHtml page.content
         , choices = page.choices ++ extraChoices

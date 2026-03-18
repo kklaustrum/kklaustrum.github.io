@@ -1,7 +1,6 @@
 module Main exposing (main)
 
 import Browser
-import Dict exposing (Dict)
 import Html exposing (Html)
 import String
 
@@ -24,7 +23,7 @@ type Model
     | Ready
         { locale : Locale
         , currentPage : String
-        , storyline : Dict String Page
+        , storyline : Book
         , world : WorldState
         , character : Character
         }
@@ -63,7 +62,7 @@ update msg model =
                 Ok book ->
                     ( Ready { locale = defaultConfig.defaultLocale
                            , currentPage = "start"
-                           , storyline = Veil.storyline book
+                           , storyline = book
                            , world = World.initWorld
                            , character = Character.initCharacter
                            }
