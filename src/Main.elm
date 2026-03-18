@@ -13,7 +13,8 @@ import HttpError exposing (resourceErrorToString)
 import Veil exposing (loadContent, Page, Book, storyline, ResourceError(..))
 import Utils exposing (defaultConfig, bookUrl)
 import World exposing (WorldState, initWorld, addVisitIfNew)
-import Character exposing (Character, initCharacter, visitPage, shouldShowPickup)
+import Character exposing (Character, initCharacter)
+import Engine exposing (applyPageVisit)
 
 -- ------------------------------------------------------------------
 -- Model
@@ -79,12 +80,11 @@ update msg model =
             case model of
                 Ready data ->
                     let
-                        newWorld = World.addVisitIfNew pageId data.world data.currentPage
-                        newCharacter = Character.visitPage pageId data.character
+                        result = Engine.applyPageVisit pageId data.currentPage data.world data.character
                     in
                     ( Ready { data | currentPage = pageId
-                                   , world = newWorld
-                                   , character = newCharacter }
+                                   , world = result.world
+                                   , character = result.character }
                     , Cmd.none
                     )
                 Loading _ -> ( model, Cmd.none )

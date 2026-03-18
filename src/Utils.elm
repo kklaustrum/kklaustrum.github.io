@@ -7,6 +7,7 @@ module Utils exposing
     , formatVisitPath
     , formatDebugInfoPure, formatInventoryData, formatParamsData, formatItemPickup
     , debugData  
+    , maybeWhen
     )
 
 import Html exposing (Html, p, hr, text)
@@ -136,3 +137,9 @@ formatInventoryData locale items =
 formatItemPickup : Locale -> String -> String
 formatItemPickup locale itemName =
     replaceLocalePlaceholder stringHelpers locale.itemPickedUp itemName
+
+maybeWhen : Bool -> a -> Maybe a
+maybeWhen condition value =
+    case condition of
+        True -> Just value
+        False -> Nothing

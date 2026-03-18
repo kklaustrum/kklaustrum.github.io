@@ -7,7 +7,6 @@ module Items exposing
     , getItemById
     , getItemName
     , getItemEffects
-    , addToInventory
     )
 
 import Dict exposing (Dict)
@@ -92,9 +91,3 @@ getItemEffects item =
         penalties = Dict.map (\_ value -> -value) item.penalties
     in
     Dict.union item.buffs penalties
-
-addToInventory : String -> List String -> List String
-addToInventory itemId inventory =
-    case List.member itemId inventory of
-        True -> inventory
-        False -> List.append inventory [itemId] 

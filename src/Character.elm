@@ -2,11 +2,9 @@ module Character exposing
     ( Character
     , initCharacter
     , addItem
-    , applyItemEffects
+    , applyEffects
     , getParam
     , inventoryList
-    , visitPage
-    , shouldShowPickup
     , updatePrevInventory
     , allParamsData
     , hasAtLeastItems
@@ -14,9 +12,7 @@ module Character exposing
     , hasItem
     , hasParam
     )
-
 import Dict exposing (Dict)
-import Items exposing (Item, getItemById, getItemEffects)
 import Params exposing (Param(..), paramToString, defaultValues)
 import Locale exposing (Locale, is, en, ru)
 
@@ -48,18 +44,13 @@ initCharacter =
 
 addItem : String -> Character -> Character
 addItem itemId character =
-    { character | inventory = Items.addToInventory itemId character.inventory }
+    case List.member itemId character.inventory of
+        True -> character
+        False -> { character | inventory = List.append character.inventory [itemId] }
 
-applyItemEffects : String -> Character -> Character
-applyItemEffects itemId character =
-    let
-        newParams =
-            Items.getItemById itemId
-                |> Maybe.map getItemEffects
-                |> Maybe.map (Dict.foldl updateParam character.params)
-                |> Maybe.withDefault character.params
-    in
-    { character | params = newParams }
+applyEffects : Dict String Int -> Character -> Character
+applyEffects effects character =
+    { character | params = Dict.foldl updateParam character.params effects }
 
 updateParam : comparable -> Int -> Dict comparable Int -> Dict comparable Int
 updateParam key delta params =
@@ -76,27 +67,6 @@ getParam paramName character =
 
 inventoryList : Character -> List String
 inventoryList character = character.inventory
-
-visitPage : String -> Character -> Character
-visitPage pageId character =
-    case Items.getItemFromPage pageId of
-        Just itemId ->
-            if shouldShowPickup character pageId then
-                character 
-                    |> updatePrevInventory 
-                    |> addItem itemId 
-                    |> applyItemEffects itemId
-            else
-                updatePrevInventory character
-                
-        Nothing ->
-            updatePrevInventory character
-
-shouldShowPickup : Character -> String -> Bool
-shouldShowPickup character pageId =
-    Items.getItemFromPage pageId
-        |> Maybe.map (\itemId -> List.member itemId character.inventory |> not)
-        |> Maybe.withDefault False
 
 hasPickedUp : String -> Character -> Bool
 hasPickedUp itemId char =

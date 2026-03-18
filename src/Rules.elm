@@ -3,30 +3,24 @@ module Rules exposing
     , evaluate
     )
 
-import Dict exposing (Dict)
-import Veil exposing (Page)
 import World exposing (WorldState)
-import Character exposing (Character, hasPickedUp, hasAtLeastItems)
+import Character exposing (Character, hasPickedUp)
 import Items exposing (getItemFromPage, getItemName)
 import Locale exposing (Locale)
 import Passages exposing (passageRule)
-import Types exposing (Rule, PageMode(..), LocaleString, LocaleChoices)
+import Types exposing (Rule, PageMode(..))
+import Utils exposing (maybeWhen)
 
 gameOverRule : Int -> Rule
 gameOverRule threshold =
     { id = "gameOver"
     , evaluate = \world _ page ->
-        if World.isGameOverCandidate page world threshold
-        then Just GameOverPage
-        else Nothing
+        maybeWhen (World.isGameOverCandidate page world threshold) GameOverPage
     }
 
 toPickupMode : Character -> String -> Maybe PageMode
 toPickupMode char itemId =
-    if Character.hasPickedUp itemId char then
-        Nothing
-    else
-        Just (ItemPickup (Items.getItemName itemId))
+    maybeWhen (not (Character.hasPickedUp itemId char)) (ItemPickup (Items.getItemName itemId))
 
 pickupRule : Rule
 pickupRule =
