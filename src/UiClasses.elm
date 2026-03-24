@@ -2,6 +2,7 @@ module UiClasses exposing
     ( novelContainerCls
     , pageTitleCls
     , paragraphCls
+    , inventoryRowCls, inventoryTagCls
     , pageContentCls
     , loadingTitleCls
     , errorTitleCls
@@ -66,6 +67,14 @@ paragraphCls : CssClass
 paragraphCls =
     "text-base leading-relaxed text-gritty-700 mb-4"
 
+inventoryRowCls : CssClass
+inventoryRowCls =
+    "flex items-baseline gap-2 mt-1"
+
+inventoryTagCls : CssClass
+inventoryTagCls =
+    "text-xs font-mono uppercase tracking-widest text-gritty-400 w-16 shrink-0"
+
 pageContentCls : CssClass
 pageContentCls =
     "mt-4"
@@ -98,7 +107,7 @@ choiceBtnCls =
 
 centeredChoiceCls : CssClass
 centeredChoiceCls =
-    "flex justify-center mt-6"
+    "flex justify-center mt-6 gap-3"
 
 -- ------------------------------------------------------------------
 -- Специальные ссылки
@@ -127,7 +136,7 @@ debugInfoCls =
 
 gameOverCls : CssClass
 gameOverCls =
-    "mt-8 p-6 bg-gradient-to-br from-accent/20 to-gritty-900 border-4 border-accent/50 rounded-xl shadow-2xl font-mono text-xl font-bold tracking-widest text-accent shadow-gritty-lg"
+    "text-2xl font-mono text-accent"
 
 -- ------------------------------------------------------------------
 -- Dividers (debug)

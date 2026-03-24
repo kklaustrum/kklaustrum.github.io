@@ -9,25 +9,17 @@ import Veil exposing (Book)
 import Messages exposing (Msg(..))
 import Render exposing (..)
 import Rules exposing (standardRules, evaluate)
-import Types exposing (PageMode(..))
+import Types exposing (PageMode(..), RenderContext)
 
-viewPage : Config -> Locale -> Book -> WorldState -> Character -> String -> Html Msg
-viewPage config locale book world character currentPage =
+viewPage : RenderContext -> Html Msg
+viewPage ctx =
     let
-        ctx =
-            { config = config
-            , locale = locale
-            , world = world
-            , character = character
-            , currentPage = currentPage
-            }
-
-        pageResult = evaluate (standardRules locale) world character currentPage
+        pageResult = evaluate (standardRules ctx.locale) ctx.world ctx.character ctx.currentPage
 
         content =
             case pageResult of
                 NormalPage extraChoices ->
-                    case Veil.getPage currentPage book of
+                    case Veil.getPage ctx.currentPage ctx.book of
                         Just page -> renderNormalPage ctx page extraChoices
                         Nothing -> renderPageNotFound ctx
 

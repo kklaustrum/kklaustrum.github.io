@@ -1,10 +1,12 @@
 module Character exposing
     ( Character
     , initCharacter
-    , addItem
+    , addToStash
+    , equipItem
     , applyEffects
     , getParam
-    , inventoryList
+    , stashList
+    , equippedList
     , updatePrevInventory
     , allParamsData
     , hasAtLeastItems
@@ -12,14 +14,16 @@ module Character exposing
     , hasItem
     , hasParam
     )
+
 import Dict exposing (Dict)
 import Params exposing (Param(..), paramToString, defaultValues)
 import Locale exposing (Locale, is, en, ru)
 
 type alias Character =
-    { inventory : List String
-    , prevInventory : List String
-    , params : Dict String Int
+    { stash    : List String
+    , equipped : List String
+    , prevAll  : List String
+    , params   : Dict String Int
     }
 
 type alias ParamConfig =
@@ -37,16 +41,27 @@ initParams =
 
 initCharacter : Character
 initCharacter =
-    { inventory = []
-    , prevInventory = []
-    , params = initParams
+    { stash    = []
+    , equipped = []
+    , prevAll  = []
+    , params   = initParams
     }
 
-addItem : String -> Character -> Character
-addItem itemId character =
-    case List.member itemId character.inventory of
-        True -> character
-        False -> { character | inventory = List.append character.inventory [itemId] }
+allItems : Character -> List String
+allItems character =
+    character.stash ++ character.equipped
+
+addToStash : String -> Character -> Character
+addToStash itemId character =
+    case List.member itemId (allItems character) of
+        True  -> character
+        False -> { character | stash = character.stash ++ [ itemId ] }
+
+equipItem : String -> Character -> Character
+equipItem itemId character =
+    case List.member itemId (allItems character) of
+        True  -> character
+        False -> { character | equipped = character.equipped ++ [ itemId ] }
 
 applyEffects : Dict String Int -> Character -> Character
 applyEffects effects character =
@@ -65,24 +80,27 @@ getParam : String -> Character -> Int
 getParam paramName character =
     Dict.get paramName character.params |> Maybe.withDefault 0
 
-inventoryList : Character -> List String
-inventoryList character = character.inventory
+stashList : Character -> List String
+stashList character = character.stash
+
+equippedList : Character -> List String
+equippedList character = character.equipped
 
 hasPickedUp : String -> Character -> Bool
 hasPickedUp itemId char =
-    List.member itemId char.prevInventory
+    List.member itemId char.prevAll
 
 updatePrevInventory : Character -> Character
 updatePrevInventory character =
-    { character | prevInventory = character.inventory }
+    { character | prevAll = allItems character }
 
 hasAtLeastItems : Int -> Character -> Bool
-hasAtLeastItems n char =
-    List.length char.inventory >= n
+hasAtLeastItems n character =
+    List.length (allItems character) >= n
 
 hasItem : String -> Character -> Bool
-hasItem itemId char =
-    List.member itemId char.inventory
+hasItem itemId character =
+    List.member itemId (allItems character)
 
 hasParam : String -> Int -> Character -> Bool
 hasParam key minValue char =

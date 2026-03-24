@@ -5,7 +5,7 @@ module Rules exposing
 
 import World exposing (WorldState)
 import Character exposing (Character, hasPickedUp)
-import Items exposing (getItemFromPage, getItemName)
+import Items exposing (getItemFromPage)
 import Locale exposing (Locale)
 import Passages exposing (passageRule)
 import Types exposing (Rule, PageMode(..))
@@ -20,7 +20,7 @@ gameOverRule threshold =
 
 toPickupMode : Character -> String -> Maybe PageMode
 toPickupMode char itemId =
-    maybeWhen (not (Character.hasPickedUp itemId char)) (ItemPickup (Items.getItemName itemId))
+    maybeWhen (not (Character.hasPickedUp itemId char)) (ItemPickup itemId)
 
 pickupRule : Rule
 pickupRule =

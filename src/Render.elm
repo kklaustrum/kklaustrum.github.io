@@ -8,9 +8,11 @@ module Render exposing
     , pageContainer
     )
 
-import Html exposing (Html)
+import Html exposing (Html, div, button, text)
+import Html.Attributes exposing (class)
+import Html.Events exposing (onClick)
 import Veil exposing (Page)
-import Messages exposing (Msg(..))
+import Messages exposing (Msg(..), stashItem, equipItem)
 import Locale exposing (Locale)
 import World exposing (WorldState)
 import Character exposing (Character)
@@ -18,6 +20,7 @@ import UiClasses exposing (..)
 import Components exposing (..)
 import Utils exposing (Config, debugData, formatItemPickup)
 import Types exposing (SecretContent, ExtraChoices, RenderContext)
+import Items
 
 type alias HtmlList = List (Html Msg)
 
@@ -38,7 +41,7 @@ pageLayout ctx content =
         debugSections =
             List.concat
                 [ paramsSection ctx.locale (Character.allParamsData ctx.character)
-                , inventorySection ctx.locale ctx.character.inventory
+                , inventorySection ctx.locale ctx.character.stash ctx.character.equipped
                 , debugSection ctx.config.showDebugInfo ctx.locale debugInfo.currentPage debugInfo.visits debugInfo.path
                 ]
     in
@@ -54,10 +57,10 @@ nonEmptyChoices choices =
     if List.isEmpty choices then [] else [ viewChoices choices ]
 
 renderItemPickup : RenderContext -> String -> HtmlList
-renderItemPickup ctx itemName =
+renderItemPickup ctx itemId =
     [ titleHtml ctx.locale.inventoryLabel
-    , paragraphNode (formatItemPickup ctx.locale itemName)
-    , singleChoice "OK" ctx.currentPage
+    , paragraphNode (formatItemPickup ctx.locale (Items.getItemName itemId))
+    , itemChoiceButtons itemId
     ]
 
 renderPageNotFound : RenderContext -> HtmlList

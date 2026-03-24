@@ -1,4 +1,4 @@
-module Engine exposing (applyPageVisit)
+module Engine exposing (applyPageVisit, applyItemChoice)
 
 import World exposing (WorldState)
 import Character exposing (Character)
@@ -8,6 +8,7 @@ import Utils exposing (maybeWhen)
 type alias VisitResult =
     { world : WorldState
     , character : Character
+    , pendingItem : Maybe String
     }
 
 applyItemEffects : String -> Character -> Character
@@ -21,24 +22,24 @@ unpickedItem : Character -> String -> Maybe String
 unpickedItem character itemId =
     Utils.maybeWhen (not (Character.hasPickedUp itemId character)) itemId
 
-pickUpItem : Character -> String -> Character
-pickUpItem character itemId =
-    character
-        |> Character.addItem itemId
-        |> applyItemEffects itemId
-
-applyNewItem : String -> Character -> Character
-applyNewItem pageId character =
+pendingItemOnPage : String -> Character -> Maybe String
+pendingItemOnPage pageId character =
     Items.getItemFromPage pageId
         |> Maybe.andThen (unpickedItem character)
-        |> Maybe.map (pickUpItem character)
-        |> Maybe.withDefault character
 
 applyPageVisit : String -> String -> WorldState -> Character -> VisitResult
 applyPageVisit pageId currentPage world character =
-    { world = World.addVisitIfNew pageId world currentPage
-    , character =
-        character
-            |> Character.updatePrevInventory
-            |> applyNewItem pageId
+    let
+        updatedCharacter = Character.updatePrevInventory character
+    in
+    { world       = World.addVisitIfNew pageId world currentPage
+    , character   = updatedCharacter
+    , pendingItem = pendingItemOnPage pageId updatedCharacter
     }
+
+applyItemChoice : (String -> Character -> Character) -> String -> Character -> Character
+applyItemChoice addFn itemId character =
+    character
+        |> addFn itemId
+        |> applyItemEffects itemId
+        |> Character.updatePrevInventory

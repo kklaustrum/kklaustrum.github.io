@@ -13,6 +13,7 @@ import Locale exposing (Locale)
 import World exposing (WorldState)
 import Character exposing (Character)
 import Utils exposing (Config)
+import Veil exposing (Book)
 
 type alias RenderContext =
     { config : Config
@@ -20,6 +21,8 @@ type alias RenderContext =
     , world : WorldState
     , character : Character
     , currentPage : String
+    , pendingItem : Maybe String
+    , book : Book
     }
 
 type alias LocaleString = Locale -> String

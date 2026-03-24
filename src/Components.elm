@@ -16,17 +16,19 @@ module Components exposing
     , gameOverNode
     , singleChoice
     , textNode
+    , itemChoiceButtons
     )
 
 import Dict exposing (Dict)
-import Html exposing (Html, button, div, h1, hr, p, text)
+import Html exposing (Html, span, button, div, h1, hr, p, text)
 import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 
 import Locale exposing (Locale)
 import Messages exposing (Msg(..))
 import UiClasses exposing (..)
-import Utils exposing (formatParamsData, formatInventoryData, formatDebugInfoPure)
+import Utils exposing (formatParamsData, formatInventoryData, formatEquippedData, formatStashData, formatDebugInfoPure)
+import Messages exposing (Msg(..), stashItem, equipItem)
 
 -- -----------------------------------------------------------------
 -- UI components
@@ -78,8 +80,18 @@ debugSection showDebug locale currentPage visits path =
 paramsSection : Locale -> Dict String Int -> List (Html msg)
 paramsSection locale params = [ p [ class debugInfoCls ] [ text (formatParamsData locale params) ] ]
 
-inventorySection : Locale -> List String -> List (Html msg)
-inventorySection locale items = [ p [ class debugInfoCls ] [ text (formatInventoryData locale items) ] ]
+inventorySection : Locale -> List String -> List String -> List (Html msg)
+inventorySection locale stash equipped =
+    [ p [ class debugInfoCls ] [ text (formatInventoryData locale (stash ++ equipped)) ]
+    , div [ class inventoryRowCls ]
+        [ span [ class inventoryTagCls ] [ text "equip" ]
+        , span [] [ text (formatEquippedData locale equipped) ]
+        ]
+    , div [ class inventoryRowCls ]
+        [ span [ class inventoryTagCls ] [ text "stash" ]
+        , span [] [ text (formatStashData locale stash) ]
+        ]
+    ]
 
 gameOverSection : Locale -> Bool -> List (Html msg)
 gameOverSection locale isGameOver =
@@ -99,3 +111,10 @@ errorTitleNode content = h1 [ class errorTitleCls ] [ textNode content ]
 
 gameOverNode : String -> Html msg
 gameOverNode content = p [ class gameOverCls ] [ textNode content ]
+
+itemChoiceButtons : String -> Html Msg
+itemChoiceButtons itemId =
+    div [ class centeredChoiceCls ]
+        [ button [ onClick (Messages.equipItem itemId), class choiceBtnCls ] [ text "equip" ]
+        , button [ onClick (Messages.stashItem itemId), class choiceBtnCls ] [ text "stash" ]
+        ]

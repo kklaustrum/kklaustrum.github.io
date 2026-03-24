@@ -13,20 +13,23 @@ import Veil exposing (loadContent, Page, Book, storyline, ResourceError(..))
 import Utils exposing (defaultConfig, bookUrl)
 import World exposing (WorldState, initWorld, addVisitIfNew)
 import Character exposing (Character, initCharacter)
-import Engine exposing (applyPageVisit)
+import Engine exposing (applyPageVisit, applyItemChoice)
 
 -- ------------------------------------------------------------------
 -- Model
 -- ------------------------------------------------------------------
+type alias ReadyData =
+    { locale      : Locale
+    , currentPage : String
+    , storyline   : Book
+    , world       : WorldState
+    , character   : Character
+    , pendingItem : Maybe String
+    }
+
 type Model
     = Loading Locale
-    | Ready
-        { locale : Locale
-        , currentPage : String
-        , storyline : Book
-        , world : WorldState
-        , character : Character
-        }
+    | Ready ReadyData
     | Error Locale String
 
 -- ------------------------------------------------------------------
@@ -60,12 +63,14 @@ update msg model =
         ContentLoaded result ->
             case result of
                 Ok book ->
-                    ( Ready { locale = defaultConfig.defaultLocale
-                           , currentPage = "start"
-                           , storyline = book
-                           , world = World.initWorld
-                           , character = Character.initCharacter
-                           }
+                    ( Ready
+                        { locale = defaultConfig.defaultLocale
+                        , currentPage = "start"
+                        , storyline = book
+                        , world = World.initWorld
+                        , character = Character.initCharacter
+                        , pendingItem = Nothing
+                        }
                     , Cmd.none
                     )
 
@@ -81,14 +86,49 @@ update msg model =
                     let
                         result = Engine.applyPageVisit pageId data.currentPage data.world data.character
                     in
-                    ( Ready { data | currentPage = pageId
-                                   , world = result.world
-                                   , character = result.character }
+                    ( Ready
+                        { data
+                            | currentPage = pageId
+                            , world = result.world
+                            , character = result.character
+                            , pendingItem = result.pendingItem
+                        }
                     , Cmd.none
                     )
-                Loading _ -> ( model, Cmd.none )
-        
-                Error _ _ -> ( model, Cmd.none )
+
+                Loading _ ->
+                    ( model, Cmd.none )
+
+                Error _ _ ->
+                    ( model, Cmd.none )
+
+        StashItem itemId ->
+            case model of
+                Ready data ->
+                    ( Ready
+                        { data
+                            | character = applyItemChoice Character.addToStash itemId data.character
+                            , pendingItem = Nothing
+                        }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
+
+        EquipItem itemId ->
+            case model of
+                Ready data ->
+                    ( Ready
+                        { data
+                            | character = applyItemChoice Character.equipItem itemId data.character
+                            , pendingItem = Nothing
+                        }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    ( model, Cmd.none )
 
         ResetToStart ->
             case model of
@@ -107,8 +147,19 @@ view model =
         Loading locale ->
             viewLoading locale
 
-        Ready { locale, currentPage, storyline, world, character } ->
-            Views.viewPage defaultConfig locale storyline world character currentPage 
+        Ready data ->
+            let
+                ctx =
+                    { config = defaultConfig
+                    , locale = data.locale
+                    , world = data.world
+                    , character = data.character
+                    , currentPage = data.currentPage
+                    , pendingItem = data.pendingItem
+                    , book = data.storyline
+                    }
+            in
+            viewPage ctx
 
         Error locale errMsg ->
             viewError locale errMsg
