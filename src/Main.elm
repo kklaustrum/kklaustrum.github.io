@@ -13,7 +13,7 @@ import Veil exposing (loadContent, Page, Book, storyline, ResourceError(..))
 import Utils exposing (defaultConfig, bookUrl)
 import World exposing (WorldState, initWorld, addVisitIfNew)
 import Character exposing (Character, initCharacter)
-import Engine exposing (applyPageVisit, applyItemChoice)
+import Engine exposing (VisitResult, applyPageVisit, applyStashChoice, applyEquipChoice)
 
 -- ------------------------------------------------------------------
 -- Model
@@ -42,6 +42,30 @@ currentLocale model =
         Ready { locale } -> locale
         Error loc _ -> loc
 
+initReady : Locale -> Book -> ReadyData
+initReady locale book =
+    { locale      = locale
+    , currentPage = "start"
+    , storyline   = book
+    , world       = World.initWorld
+    , character   = Character.initCharacter
+    , pendingItem = Nothing
+    }
+
+updateReady : (ReadyData -> ReadyData) -> Model -> ( Model, Cmd Msg )
+updateReady f model =
+    case model of
+        Ready data -> ( Ready (f data), Cmd.none )
+        _ -> ( model, Cmd.none )
+
+applyVisitResult : VisitResult -> String -> ReadyData -> ReadyData
+applyVisitResult result pageId data =
+    { data | currentPage = pageId, world = result.world, character = result.character, pendingItem = result.pendingItem }
+
+withCharacter : Character -> Maybe String -> ReadyData -> ReadyData
+withCharacter char pending data =
+    { data | character = char, pendingItem = pending }
+
 -- ------------------------------------------------------------------
 -- Init
 -- ------------------------------------------------------------------
@@ -60,83 +84,29 @@ init _ =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ContentLoaded result ->
-            case result of
-                Ok book ->
-                    ( Ready
-                        { locale = defaultConfig.defaultLocale
-                        , currentPage = "start"
-                        , storyline = book
-                        , world = World.initWorld
-                        , character = Character.initCharacter
-                        , pendingItem = Nothing
-                        }
-                    , Cmd.none
-                    )
+        ContentLoaded (Ok book) ->
+            ( Ready (initReady defaultConfig.defaultLocale book), Cmd.none )
 
-                Err err ->
-                    let
-                        errMsg = resourceErrorToString (currentLocale model) err
-                    in
-                    ( Error defaultConfig.defaultLocale errMsg, Cmd.none )
+        ContentLoaded (Err err) ->
+            ( Error defaultConfig.defaultLocale (resourceErrorToString (currentLocale model) err), Cmd.none )
 
         GoToPage pageId ->
-            case model of
-                Ready data ->
-                    let
-                        result = Engine.applyPageVisit pageId data.currentPage data.world data.character
-                    in
-                    ( Ready
-                        { data
-                            | currentPage = pageId
-                            , world = result.world
-                            , character = result.character
-                            , pendingItem = result.pendingItem
-                        }
-                    , Cmd.none
-                    )
-
-                Loading _ ->
-                    ( model, Cmd.none )
-
-                Error _ _ ->
-                    ( model, Cmd.none )
+            updateReady (\data ->
+                applyVisitResult (Engine.applyPageVisit pageId data.currentPage data.world data.character) pageId data
+            ) model
 
         StashItem itemId ->
-            case model of
-                Ready data ->
-                    ( Ready
-                        { data
-                            | character = applyItemChoice Character.addToStash itemId data.character
-                            , pendingItem = Nothing
-                        }
-                    , Cmd.none
-                    )
-
-                _ ->
-                    ( model, Cmd.none )
+            updateReady (\data ->
+                withCharacter (applyStashChoice itemId data.character) Nothing data
+            ) model
 
         EquipItem itemId ->
-            case model of
-                Ready data ->
-                    ( Ready
-                        { data
-                            | character = applyItemChoice Character.equipItem itemId data.character
-                            , pendingItem = Nothing
-                        }
-                    , Cmd.none
-                    )
-
-                _ ->
-                    ( model, Cmd.none )
+            updateReady (\data ->
+                withCharacter (applyEquipChoice itemId data.character) Nothing data
+            ) model
 
         ResetToStart ->
-            case model of
-                Ready data ->
-                    ( Ready { data | currentPage = "start" }, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
+            updateReady (\data -> { data | currentPage = "start" }) model
 
 -- ------------------------------------------------------------------
 -- View

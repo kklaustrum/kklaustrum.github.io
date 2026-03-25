@@ -1,4 +1,4 @@
-module Engine exposing (applyPageVisit, applyItemChoice)
+module Engine exposing (VisitResult, applyPageVisit, applyStashChoice, applyEquipChoice)
 
 import World exposing (WorldState)
 import Character exposing (Character)
@@ -37,9 +37,15 @@ applyPageVisit pageId currentPage world character =
     , pendingItem = pendingItemOnPage pageId updatedCharacter
     }
 
-applyItemChoice : (String -> Character -> Character) -> String -> Character -> Character
-applyItemChoice addFn itemId character =
+applyStashChoice : String -> Character -> Character
+applyStashChoice itemId character =
     character
-        |> addFn itemId
+        |> Character.addToStash itemId
+        |> Character.updatePrevInventory
+
+applyEquipChoice : String -> Character -> Character
+applyEquipChoice itemId character =
+    character
+        |> Character.equipItem itemId
         |> applyItemEffects itemId
         |> Character.updatePrevInventory

@@ -8,11 +8,9 @@ module Render exposing
     , pageContainer
     )
 
-import Html exposing (Html, div, button, text)
-import Html.Attributes exposing (class)
-import Html.Events exposing (onClick)
+import Html exposing (Html)
 import Veil exposing (Page)
-import Messages exposing (Msg(..), stashItem, equipItem)
+import Messages exposing (Msg(..))
 import Locale exposing (Locale)
 import World exposing (WorldState)
 import Character exposing (Character)
