@@ -6,7 +6,8 @@ module Utils exposing
     , isBookUrl
     , formatVisitPath
     , formatDebugInfoPure, formatInventoryData, formatEquippedData, formatStashData
-    , formatParamsData, formatItemPickup
+    , formatParamsData, formatParamLabel, formatParamValue
+    , formatItemPickup
     , debugData  
     , maybeWhen
     )
@@ -107,25 +108,19 @@ formatDebugInfoPure locale currentPage visits path =
         , formatVisitPath locale path
         ]
 
-formatParamsData : Locale -> Dict String Int -> String
-formatParamsData locale paramsDict =
-    let
-        paramEntries = Dict.toList paramsDict
-        paramStrings = List.map (formatParamEntry locale) paramEntries
-        separatedParams = List.intersperse stringHelpers.listSep paramStrings
-        paramsText = String.join "" separatedParams
-    in
-        labelWithSeparator stringHelpers locale.paramsLabel paramsText
+formatParamsData : Locale -> String
+formatParamsData locale =
+    locale.paramsLabel
 
-formatParamEntry : Locale -> ( String, Int ) -> String
-formatParamEntry locale ( key, value ) =
-    let
-        label =
-            stringToParam key
-                |> Maybe.map (Params.getParamLabel locale)
-                |> Maybe.withDefault key
-    in
-    labelWithSeparator stringHelpers label (String.fromInt value)
+formatParamValue : Locale -> ( String, Int ) -> String
+formatParamValue _ ( _, value ) =
+    String.fromInt value
+
+formatParamLabel : Locale -> ( String, Int ) -> String
+formatParamLabel locale ( key, _ ) =
+    stringToParam key
+        |> Maybe.map (Params.getParamLabel locale)
+        |> Maybe.withDefault key
 
 formatInventoryData : Locale -> List String -> String
 formatInventoryData locale items =

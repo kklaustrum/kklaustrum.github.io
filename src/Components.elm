@@ -1,5 +1,6 @@
 module Components exposing
     ( novelContainer
+    , statsGrid
     , choiceButton
     , viewChoices
     , titleHtml
@@ -26,7 +27,7 @@ import Html.Events exposing (onClick)
 
 import Locale exposing (Locale)
 import UiClasses exposing (..)
-import Utils exposing (formatParamsData, formatInventoryData, formatEquippedData, formatStashData, formatDebugInfoPure)
+import Utils exposing (formatParamsData, formatParamLabel, formatParamValue, formatInventoryData, formatEquippedData, formatStashData, formatDebugInfoPure)
 import Messages exposing (Msg(..), stashItem, equipItem)
 
 -- -----------------------------------------------------------------
@@ -35,6 +36,13 @@ import Messages exposing (Msg(..), stashItem, equipItem)
 novelContainer : List (Html msg) -> Html msg
 novelContainer children =
     div [ class novelContainerCls ] children
+
+statsGrid : List (Html msg) -> List (Html msg) -> Html msg
+statsGrid left right =
+    div [ class statsGridCls ]
+        [ div [] left
+        , div [] right
+        ]
 
 choiceButton : (String, String) -> Html Msg
 choiceButton (label, pageId) =
@@ -77,17 +85,24 @@ debugSection showDebug locale currentPage visits path =
     else []
 
 paramsSection : Locale -> Dict String Int -> List (Html msg)
-paramsSection locale params = [ p [ class debugInfoCls ] [ text (formatParamsData locale params) ] ]
+paramsSection locale params =
+    [ p [ class debugInfoCls ] [ text (formatParamsData locale) ] ]
+    ++ List.map (\entry ->
+        div [ class inventoryRowCls ]
+            [ span [ class rowTagCls ] [ text (formatParamLabel locale entry) ]
+            , span [] [ text (formatParamValue locale entry) ]
+            ]
+        ) (Dict.toList params)
 
 inventorySection : Locale -> List String -> List String -> List (Html msg)
 inventorySection locale stash equipped =
     [ p [ class debugInfoCls ] [ text locale.inventoryLabel ]
     , div [ class inventoryRowCls ]
-        [ span [ class inventoryTagCls ] [ text "equip" ]
+        [ span [ class rowTagCls ] [ text "equip" ]
         , span [] [ text (formatEquippedData locale equipped) ]
         ]
     , div [ class inventoryRowCls ]
-        [ span [ class inventoryTagCls ] [ text "stash" ]
+        [ span [ class rowTagCls ] [ text "stash" ]
         , span [] [ text (formatStashData locale stash) ]
         ]
     ]

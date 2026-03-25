@@ -2,7 +2,7 @@ module UiClasses exposing
     ( novelContainerCls
     , pageTitleCls
     , paragraphCls
-    , inventoryRowCls, inventoryTagCls
+    , inventoryRowCls, rowTagCls, statsGridCls
     , pageContentCls
     , loadingTitleCls
     , errorTitleCls
@@ -71,9 +71,13 @@ inventoryRowCls : CssClass
 inventoryRowCls =
     "flex items-baseline gap-2 mt-1"
 
-inventoryTagCls : CssClass
-inventoryTagCls =
+rowTagCls : CssClass
+rowTagCls =
     "text-xs font-mono uppercase tracking-widest text-gritty-400 w-16 shrink-0"
+
+statsGridCls : CssClass
+statsGridCls =
+    "grid grid-cols-1 md:grid-cols-2 gap-4 mt-4"
 
 pageContentCls : CssClass
 pageContentCls =

@@ -36,17 +36,19 @@ pageLayout : RenderContext -> PageContent -> HtmlList
 pageLayout ctx content =
     let
         debugInfo = debugData ctx.world ctx.currentPage
-        debugSections =
-            List.concat
-                [ paramsSection ctx.locale (Character.allParamsData ctx.character)
-                , inventorySection ctx.locale ctx.character.stash ctx.character.equipped
-                , debugSection ctx.config.showDebugInfo ctx.locale debugInfo.currentPage debugInfo.visits debugInfo.path
-                ]
+        statsRow =
+            [ Components.statsGrid
+                (paramsSection ctx.locale (Character.allParamsData ctx.character))
+                (inventorySection ctx.locale ctx.character.stash ctx.character.equipped)
+            ]
+        debugRows =
+            debugSection ctx.config.showDebugInfo ctx.locale debugInfo.currentPage debugInfo.visits debugInfo.path
     in
     List.concat
         [ [ content.title ]
         , content.content
-        , debugSections
+        , statsRow
+        , debugRows
         , nonEmptyChoices content.choices
         ]
 

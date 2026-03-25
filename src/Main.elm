@@ -6,14 +6,15 @@ import String
 
 import Views exposing (viewPage)
 import Components exposing (viewLoading, viewError)
-import Messages exposing (Msg(..), goToPage, resetToStart)
+import Messages exposing (Msg(..))
 import Locale exposing (Locale)
 import HttpError exposing (resourceErrorToString)
 import Veil exposing (loadContent, Page, Book, storyline, ResourceError(..))
 import Utils exposing (defaultConfig, bookUrl)
-import World exposing (WorldState, initWorld, addVisitIfNew)
+import World exposing (WorldState, initWorld)
 import Character exposing (Character, initCharacter)
 import Engine exposing (VisitResult, applyPageVisit, applyStashChoice, applyEquipChoice)
+import Types exposing (RenderContext)
 
 -- ------------------------------------------------------------------
 -- Model
@@ -50,6 +51,17 @@ initReady locale book =
     , world       = World.initWorld
     , character   = Character.initCharacter
     , pendingItem = Nothing
+    }
+
+toRenderContext : ReadyData -> RenderContext
+toRenderContext data =
+    { config      = defaultConfig
+    , locale      = data.locale
+    , world       = data.world
+    , character   = data.character
+    , currentPage = data.currentPage
+    , pendingItem = data.pendingItem
+    , book        = data.storyline
     }
 
 updateReady : (ReadyData -> ReadyData) -> Model -> ( Model, Cmd Msg )
@@ -118,18 +130,7 @@ view model =
             viewLoading locale
 
         Ready data ->
-            let
-                ctx =
-                    { config = defaultConfig
-                    , locale = data.locale
-                    , world = data.world
-                    , character = data.character
-                    , currentPage = data.currentPage
-                    , pendingItem = data.pendingItem
-                    , book = data.storyline
-                    }
-            in
-            viewPage ctx
+            viewPage (toRenderContext data)
 
         Error locale errMsg ->
             viewError locale errMsg
