@@ -25,7 +25,6 @@ import Html.Attributes exposing (class)
 import Html.Events exposing (onClick)
 
 import Locale exposing (Locale)
-import Messages exposing (Msg(..))
 import UiClasses exposing (..)
 import Utils exposing (formatParamsData, formatInventoryData, formatEquippedData, formatStashData, formatDebugInfoPure)
 import Messages exposing (Msg(..), stashItem, equipItem)
@@ -82,7 +81,7 @@ paramsSection locale params = [ p [ class debugInfoCls ] [ text (formatParamsDat
 
 inventorySection : Locale -> List String -> List String -> List (Html msg)
 inventorySection locale stash equipped =
-    [ p [ class debugInfoCls ] [ text (formatInventoryData locale (stash ++ equipped)) ]
+    [ p [ class debugInfoCls ] [ text locale.inventoryLabel ]
     , div [ class inventoryRowCls ]
         [ span [ class inventoryTagCls ] [ text "equip" ]
         , span [] [ text (formatEquippedData locale equipped) ]

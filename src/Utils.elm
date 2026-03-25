@@ -11,8 +11,6 @@ module Utils exposing
     , maybeWhen
     )
 
-import Html exposing (Html, p, hr, text)
-import Html.Attributes exposing (class)
 import World exposing (WorldState, visitCount, visitPath)
 import Dict exposing (Dict)
 import Set exposing (Set)
