@@ -5,17 +5,17 @@ module Utils exposing
     , markdownUrl
     , isBookUrl
     , formatVisitPath
-    , formatDebugInfoPure, formatInventoryData, formatEquippedData, formatStashData
+    , formatInventoryData, formatEquippedData, formatStashData
     , formatParamsData, formatParamLabel, formatParamValue
     , formatItemPickup
-    , debugData  
-    , maybeWhen
+    , debugData, joinList
+    , maybeWhen, listWhen
     )
 
 import World exposing (WorldState, visitCount, visitPath)
 import Dict exposing (Dict)
 import Set exposing (Set)
-import Locale exposing (Locale, is, en, ru)
+import Locale exposing (Locale, is, en)
 import String exposing (fromInt)
 import Messages exposing (Msg(..))
 import Params exposing (stringToParam, getParamLabel)
@@ -62,12 +62,12 @@ formatListWithBrackets helpers label list =
         (open, close) = helpers.brackets
         content = String.join helpers.listSep list
     in
-    label ++ helpers.separator ++ open ++ content ++ close
+    label ++ helpers.space ++ open ++ content ++ close
 
 emptyOrList : StringHelpers -> String -> String -> List String -> String
 emptyOrList helpers label emptyText items =
     case items of
-        [] -> labelWithSeparator helpers label emptyText
+        [] -> label ++ helpers.space ++ emptyText
         _ -> formatListWithBrackets helpers label items
 
 replaceLocalePlaceholder : StringHelpers -> String -> String -> String
@@ -97,16 +97,9 @@ debugData world currentPage =
     , path = World.visitPath world
     }
 
-formatDebugInfoPure : Locale -> String -> Int -> List String -> String
-formatDebugInfoPure locale currentPage visits path =
-    let
-        visitsText = replaceLocalePlaceholder stringHelpers locale.debugCurrentPageVisits (String.fromInt visits)
-    in
-    String.join " | " 
-        [ labelWithSeparator stringHelpers locale.debugCurrentPagePrefix currentPage
-        , visitsText
-        , formatVisitPath locale path
-        ]
+joinList : List String -> String
+joinList items =
+    String.join stringHelpers.listSep items
 
 formatParamsData : Locale -> String
 formatParamsData locale =
@@ -145,3 +138,9 @@ maybeWhen condition value =
     case condition of
         True -> Just value
         False -> Nothing
+
+listWhen : Bool -> a -> List a
+listWhen condition value =
+    case condition of
+        True -> [ value ]
+        False -> []

@@ -1,4 +1,4 @@
-module Locale exposing (Locale, is, en, ru)
+module Locale exposing (Locale, is, en)
 
 type alias Locale =
     { loading : String
@@ -24,6 +24,8 @@ type alias Locale =
     , itemPickedUp : String
     , someRoomHeader : String
     , someRoomTxt : String
+    , equip : String
+    , stash : String
     }
 
 is =
@@ -38,7 +40,7 @@ is =
     , httpBadStatus = "Ógild staða: %s"
     , httpBadBody = "Ekki hægt að lesa svar: %s"
     , debugCurrentPagePrefix = "Núverandi"
-    , debugCurrentPageVisits = "heimsóknir:%s"
+    , debugCurrentPageVisits = "Heimsóknir"
     , debugPathLabel = "Stígn"
     , gameOver = "Ganga í hringi. Teldu þetta leik lokinn."
     , paramsLabel = "Gildi"
@@ -50,6 +52,8 @@ is =
     , itemPickedUp = "Fann hlut: %s"
     , someRoomHeader = "Búið herbergi"
     , someRoomTxt = "Þú fannst leynilega herbergið! Öll þín hlutir unnu saman til að afhjúpa þessa leyndarmál."
+    , equip = "Búnaður"
+    , stash = "Farangur"
     }
 
 en =
@@ -64,7 +68,7 @@ en =
     , httpBadStatus = "Bad status: %s"
     , httpBadBody = "Cannot parse body: %s"
     , debugCurrentPagePrefix = "Current"
-    , debugCurrentPageVisits = "visits:%s"
+    , debugCurrentPageVisits = "Visits"
     , debugPathLabel = "Path"
     , gameOver = "Walking in circles. Consider this game over."
     , paramsLabel = "Parameters"
@@ -76,30 +80,6 @@ en =
     , itemPickedUp = "Picked up item: %s"
     , someRoomHeader = "Generated Room"
     , someRoomTxt = "You found the hidden chamber! All your items worked together to reveal this secret."
-    }
-
-ru =
-    { loading = "Загрузка книги…"
-    , errorTitle = "Ошибка"
-    , errorMessage = ""
-    , pageNotFound = "Страница не найдена"
-    , backToHomeLabel = "На главную"
-    , httpBadUrl = "Неверный URL: "
-    , httpTimeout = "Таймаут"
-    , httpNetworkError = "Сетевая ошибка"
-    , httpBadStatus = "Неправильный статус: %s"
-    , httpBadBody = "Не удалось разобрать тело: %s"
-    , debugCurrentPagePrefix = "Текущая"
-    , debugCurrentPageVisits = "посещений:%s"
-    , debugPathLabel = "Путь"
-    , gameOver = "Ходим по кругу. Считай, что game over."
-    , paramsLabel = "Параметры"
-    , inventoryLabel = "Инвентарь" 
-    , noItemsLabel = "Нет предметов"
-    , curiosity = "Любознательность"
-    , endurance = "Выносливость"
-    , intellect = "Интеллект"
-    , itemPickedUp = "Получена вещь: %s"
-    , someRoomHeader = "Сгенерированное"
-    , someRoomTxt = "Найдено спрятанное пространство! Ваши вещи сработали, чтобы открыть этот секрет."
+    , equip = "Equip"
+    , stash = "Stash"
     }

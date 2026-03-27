@@ -30,7 +30,7 @@ type alias CssClass = String
 -- ------------------------------------------------------------------
 bodyCls : CssClass
 bodyCls =
-    "bg-gritty-100 text-gritty-800 font-sans min-h-screen flex items-center justify-center p-4"
+    "bg-gritty-100 text-gritty-800 font-sans min-h-screen flex items-center justify-center px-1 md:px-8 py-4"
 
 rootDivCls : CssClass
 rootDivCls =
@@ -42,7 +42,7 @@ rootDivCls =
 -- ------------------------------------------------------------------
 novelContainerCls : CssClass
 novelContainerCls =
-    "max-w-2xl mx-auto bg-gritty-50 rounded-lg shadow-gritty p-6"
+    "max-w-2xl mx-auto bg-gritty-50 rounded-lg shadow-gritty px-4 py-6"
 
 -- ------------------------------------------------------------------
 -- Текстовые элементы
@@ -73,11 +73,11 @@ inventoryRowCls =
 
 rowTagCls : CssClass
 rowTagCls =
-    "text-xs font-mono uppercase tracking-widest text-gritty-400 w-16 shrink-0"
+    "text-xs font-mono uppercase tracking-widest text-gritty-400 w-24 shrink-0"
 
 statsGridCls : CssClass
 statsGridCls =
-    "grid grid-cols-1 md:grid-cols-2 gap-4 mt-4"
+    "grid grid-cols-1 md:grid-cols-2 gap-2 mt-1"
 
 pageContentCls : CssClass
 pageContentCls =
@@ -136,7 +136,7 @@ pulseAnimationCls =
 -- ------------------------------------------------------------------
 debugInfoCls : CssClass
 debugInfoCls =
-    "mt-6 pt-4 border-t-2 border-gritty-400 bg-gritty-50 shadow-inner rounded-md p-4 font-mono text-base leading-none tracking-widest"
+    "mt-6 pt-4 border-t-2 border-gritty-400 bg-gritty-50 shadow-inner rounded-md p-2 font-mono text-base leading-none tracking-widest"
 
 gameOverCls : CssClass
 gameOverCls =

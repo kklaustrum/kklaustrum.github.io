@@ -8,9 +8,8 @@ module Components exposing
     , viewParagraphs
     , viewLoading
     , viewError
-    , debugSection
-    , paramsSection
-    , inventorySection
+    , paramsSection, inventorySection
+    , currentPageSection, pathSection
     , gameOverSection
     , paragraphNode
     , errorTitleNode  
@@ -27,7 +26,7 @@ import Html.Events exposing (onClick)
 
 import Locale exposing (Locale)
 import UiClasses exposing (..)
-import Utils exposing (formatParamsData, formatParamLabel, formatParamValue, formatInventoryData, formatEquippedData, formatStashData, formatDebugInfoPure)
+import Utils exposing (formatParamsData, formatParamLabel, formatParamValue, formatInventoryData, formatEquippedData, formatStashData, joinList, listWhen)
 import Messages exposing (Msg(..), stashItem, equipItem)
 
 -- -----------------------------------------------------------------
@@ -76,34 +75,57 @@ contentHtml : List String -> List (Html Msg)
 contentHtml paragraphs = 
     List.map paragraphNode paragraphs
 
-debugSection : Bool -> Locale -> String -> Int -> List String -> List (Html msg)
-debugSection showDebug locale currentPage visits path =
-    if showDebug then
-        [ hr [ class debugDividerCls ] []
-        , p [ class debugInfoCls ] [ text (formatDebugInfoPure locale currentPage visits path) ]
-        ]
-    else []
+currentPageSection : Bool -> Locale -> String -> Int -> List (Html msg)
+currentPageSection showDebug locale currentPage visits =
+    listWhen showDebug
+        (div [ class debugInfoCls ]
+            [ div [ class inventoryRowCls ]
+                [ span [ class rowTagCls ] [ text locale.debugCurrentPagePrefix ]
+                , span [] [ text currentPage ]
+                ]
+            , div [ class inventoryRowCls ]
+                [ span [ class rowTagCls ] [ text locale.debugCurrentPageVisits ]
+                , span [] [ text (String.fromInt visits) ]
+                ]
+            ]
+        )
+
+pathSection : Bool -> Locale -> List String -> List (Html msg)
+pathSection showDebug locale path =
+    listWhen showDebug
+        (div [ class debugInfoCls ]
+            [ div [ class inventoryRowCls ]
+                [ span [ class rowTagCls ] [ text locale.debugPathLabel ]
+                , span [] [ text (Utils.joinList path) ]
+                ]
+            ]
+        )
 
 paramsSection : Locale -> Dict String Int -> List (Html msg)
 paramsSection locale params =
-    [ p [ class debugInfoCls ] [ text (formatParamsData locale) ] ]
-    ++ List.map (\entry ->
-        div [ class inventoryRowCls ]
-            [ span [ class rowTagCls ] [ text (formatParamLabel locale entry) ]
-            , span [] [ text (formatParamValue locale entry) ]
-            ]
-        ) (Dict.toList params)
+    [ div [ class debugInfoCls ]
+        ([ p [] [ text (formatParamsData locale) ] ]
+        ++ List.map (\entry ->
+            div [ class inventoryRowCls ]
+                [ span [ class rowTagCls ] [ text (formatParamLabel locale entry) ]
+                , span [] [ text (formatParamValue locale entry) ]
+                ]
+            ) (Dict.toList params)
+        )
+    ]
 
 inventorySection : Locale -> List String -> List String -> List (Html msg)
 inventorySection locale stash equipped =
-    [ p [ class debugInfoCls ] [ text locale.inventoryLabel ]
-    , div [ class inventoryRowCls ]
-        [ span [ class rowTagCls ] [ text "equip" ]
-        , span [] [ text (formatEquippedData locale equipped) ]
-        ]
-    , div [ class inventoryRowCls ]
-        [ span [ class rowTagCls ] [ text "stash" ]
-        , span [] [ text (formatStashData locale stash) ]
+    [ div [ class debugInfoCls ]
+        [ p [] [ text locale.inventoryLabel ]
+        , div [ class inventoryRowCls ]
+            [ span [ class rowTagCls ] [ text locale.equip ]
+            , span [] [ text (formatEquippedData locale equipped) ]
+            ]
+        , div [ class inventoryRowCls ]
+            [ span [ class rowTagCls ] [ text locale.stash ]
+            , span [] [ text (formatStashData locale stash) ]
+            ]
         ]
     ]
 

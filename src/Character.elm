@@ -17,7 +17,7 @@ module Character exposing
 
 import Dict exposing (Dict)
 import Params exposing (Param(..), paramToString, defaultValues)
-import Locale exposing (Locale, is, en, ru)
+import Locale exposing (Locale, is, en)
 
 type alias Character =
     { stash    : List String
