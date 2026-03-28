@@ -1,6 +1,6 @@
 module Components exposing
     ( novelContainer
-    , statsGrid
+    , statsGrid, statsLayout
     , choiceButton
     , viewChoices
     , titleHtml
@@ -28,10 +28,57 @@ import Locale exposing (Locale)
 import UiClasses exposing (..)
 import Utils exposing (formatParamsData, formatParamLabel, formatParamValue, formatInventoryData, formatEquippedData, formatStashData, joinList, listWhen)
 import Messages exposing (Msg(..), stashItem, equipItem)
+import Types exposing (EquippedItems(..), StashItems(..))
+
+-- -----------------------------------------------------------------
+-- Low-level helpers
+-- -----------------------------------------------------------------
+labeledSpan : String -> String -> Html msg
+labeledSpan cls content =
+    span [ class cls ] [ text content ]
+
+sectionHeader : String -> Html msg
+sectionHeader content =
+    p [ class sectionHeaderCls ] [ text content ]
+
+-- A row with a tagged label on the left and a plain value on the right.
+infoRow : String -> String -> Html msg
+infoRow label value =
+    div [ class inventoryRowCls ]
+        [ labeledSpan rowTagCls label
+        , span [ class breakWordsCls ] [ text value ]
+        ]
+
+infoSection : List (Html msg) -> List (Html msg) -> Html msg
+infoSection header rows =
+    div [ class infoSectionCls ]
+        [ div [] header
+        , div [ class infoRowsGridCls ] rows
+        ]
 
 -- -----------------------------------------------------------------
 -- UI components
 -- -----------------------------------------------------------------
+toggleBadge : String -> String -> String -> Msg -> Html Msg
+toggleBadge arrow hint label msg =
+    span [ class toggleBadgeCls ]
+        [ span [] [ text label ]
+        , span
+            [ onClick msg
+            , Html.Attributes.title (arrow ++ " " ++ hint)
+            , class itemArrowCls
+            ]
+            [ text arrow ]
+        ]
+
+toggleRow : String -> String -> List ( String, String, Msg ) -> Html Msg
+toggleRow rowTag arrow items =
+    div [ class inventoryRowCls ]
+        [ labeledSpan rowTagCls rowTag
+        , span [ class toggleRowCls ]
+            (List.map (\( label, hint, msg ) -> toggleBadge arrow hint label msg) items)
+        ]
+
 novelContainer : List (Html msg) -> Html msg
 novelContainer children =
     div [ class novelContainerCls ] children
@@ -41,6 +88,15 @@ statsGrid left right =
     div [ class statsGridCls ]
         [ div [] left
         , div [] right
+        ]
+
+statsLayout : List (Html msg) -> List (Html msg) -> List (Html msg) -> List (Html msg) -> Html msg
+statsLayout topLeft topRight bottomLeft bottomRight =
+    div [ class statsGridCls ]
+        [ div [] topLeft
+        , div [] topRight
+        , div [] bottomLeft
+        , div [] bottomRight
         ]
 
 choiceButton : (String, String) -> Html Msg
@@ -77,61 +133,53 @@ contentHtml paragraphs =
 
 currentPageSection : Bool -> Locale -> String -> Int -> List (Html msg)
 currentPageSection showDebug locale currentPage visits =
-    listWhen showDebug
-        (div [ class debugInfoCls ]
-            [ div [ class inventoryRowCls ]
-                [ span [ class rowTagCls ] [ text locale.debugCurrentPagePrefix ]
-                , span [] [ text currentPage ]
-                ]
-            , div [ class inventoryRowCls ]
-                [ span [ class rowTagCls ] [ text locale.debugCurrentPageVisits ]
-                , span [] [ text (String.fromInt visits) ]
-                ]
+    listWhen showDebug <|
+        infoSection []
+            [ infoRow locale.debugCurrentPagePrefix currentPage
+            , infoRow locale.debugCurrentPageVisits (String.fromInt visits)
             ]
-        )
 
 pathSection : Bool -> Locale -> List String -> List (Html msg)
 pathSection showDebug locale path =
-    listWhen showDebug
-        (div [ class debugInfoCls ]
-            [ div [ class inventoryRowCls ]
-                [ span [ class rowTagCls ] [ text locale.debugPathLabel ]
-                , span [] [ text (Utils.joinList path) ]
-                ]
-            ]
-        )
+    listWhen showDebug <|
+        infoSection []
+            [ infoRow locale.debugPathLabel (Utils.joinList path) ]
+
+paramRow : Locale -> ( String, Int ) -> Html msg
+paramRow locale entry =
+    infoRow (formatParamLabel locale entry) (formatParamValue locale entry)
 
 paramsSection : Locale -> Dict String Int -> List (Html msg)
 paramsSection locale params =
-    [ div [ class debugInfoCls ]
-        ([ p [] [ text (formatParamsData locale) ] ]
-        ++ List.map (\entry ->
-            div [ class inventoryRowCls ]
-                [ span [ class rowTagCls ] [ text (formatParamLabel locale entry) ]
-                , span [] [ text (formatParamValue locale entry) ]
-                ]
-            ) (Dict.toList params)
-        )
+    [ infoSection
+        [ sectionHeader (formatParamsData locale) ]
+        (List.map (paramRow locale) (Dict.toList params))
     ]
 
-inventorySection : Locale -> List String -> List String -> List (Html msg)
-inventorySection locale stash equipped =
-    [ div [ class debugInfoCls ]
-        [ p [] [ text locale.inventoryLabel ]
-        , div [ class inventoryRowCls ]
-            [ span [ class rowTagCls ] [ text locale.equip ]
-            , span [] [ text (formatEquippedData locale equipped) ]
+itemBadge : String -> String -> Msg -> Html Msg
+itemBadge arrow itemId msg =
+    span []
+        [ span [] [ text itemId ]
+        , span
+            [ onClick msg
+            , Html.Attributes.title (arrow ++ " move")
+            , class itemArrowCls
             ]
-        , div [ class inventoryRowCls ]
-            [ span [ class rowTagCls ] [ text locale.stash ]
-            , span [] [ text (formatStashData locale stash) ]
-            ]
+            [ text arrow ]
+        ]
+
+inventorySection : Locale -> EquippedItems -> StashItems -> List (Html Msg)
+inventorySection locale (EquippedItems equipped) (StashItems stash) =
+    [ infoSection
+        [ sectionHeader locale.inventoryLabel ]
+        [ toggleRow locale.equip "▼" equipped
+        , toggleRow locale.stash "▲" stash
         ]
     ]
 
 gameOverSection : Locale -> Bool -> List (Html msg)
 gameOverSection locale isGameOver =
-    if isGameOver then [ p [ class gameOverCls ] [ text locale.gameOver ] ] else []
+    listWhen isGameOver (gameOverNode locale.gameOver)
 
 singleChoice : String -> String -> Html Msg
 singleChoice label pageId = div [ class centeredChoiceCls ] [ choiceButton (label, pageId) ]

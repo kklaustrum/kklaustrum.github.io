@@ -2,7 +2,7 @@ module UiClasses exposing
     ( novelContainerCls
     , pageTitleCls
     , paragraphCls
-    , inventoryRowCls, rowTagCls, statsGridCls
+    , rowTagCls, statsGridCls
     , pageContentCls
     , loadingTitleCls
     , errorTitleCls
@@ -17,10 +17,11 @@ module UiClasses exposing
     , buttonActiveCls
     , fadeInAnimationCls
     , pulseAnimationCls
-    , debugInfoCls
+    , inventoryRowCls, infoSectionCls, infoRowsGridCls, sectionHeaderCls, breakWordsCls
     , gameOverCls
     , debugDividerCls
     , centeredChoiceCls
+    , itemArrowCls, toggleBadgeCls, toggleRowCls
     )
 
 type alias CssClass = String
@@ -42,7 +43,7 @@ rootDivCls =
 -- ------------------------------------------------------------------
 novelContainerCls : CssClass
 novelContainerCls =
-    "max-w-2xl mx-auto bg-gritty-50 rounded-lg shadow-gritty px-4 py-6"
+    "w-full max-w-2xl mx-auto bg-gritty-50 rounded-lg shadow-gritty px-1 md:px-4 py-6"
 
 -- ------------------------------------------------------------------
 -- Текстовые элементы
@@ -67,17 +68,33 @@ paragraphCls : CssClass
 paragraphCls =
     "text-base leading-relaxed text-gritty-700 mb-4"
 
-inventoryRowCls : CssClass
-inventoryRowCls =
-    "flex items-baseline gap-2 mt-1"
-
 rowTagCls : CssClass
 rowTagCls =
-    "text-xs font-mono uppercase tracking-widest text-gritty-400 w-24 shrink-0"
+    "font-mono text-xs uppercase tracking-widest text-gritty-400 whitespace-nowrap"
 
 statsGridCls : CssClass
 statsGridCls =
-    "grid grid-cols-1 md:grid-cols-2 gap-2 mt-1"
+    "grid grid-cols-2 sm:grid-cols-2 gap-1 mt-1"
+
+inventoryRowCls : CssClass
+inventoryRowCls =
+    "contents"
+
+infoSectionCls : CssClass
+infoSectionCls =
+    "mt-4 border-t-2 border-gritty-300 bg-gritty-50 shadow-inner rounded-md p-2 font-mono text-sm"
+
+infoRowsGridCls : CssClass
+infoRowsGridCls =
+    "grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1 mt-1 items-baseline"
+
+sectionHeaderCls : CssClass
+sectionHeaderCls =
+    "text-base font-light mb-1 tracking-wide"
+
+breakWordsCls : CssClass
+breakWordsCls =
+    "min-w-0 break-words"
 
 pageContentCls : CssClass
 pageContentCls =
@@ -113,6 +130,18 @@ centeredChoiceCls : CssClass
 centeredChoiceCls =
     "flex justify-center mt-6 gap-3"
 
+itemArrowCls : CssClass
+itemArrowCls =
+    "ml-1 cursor-pointer text-gritty-400 hover:text-gritty-700 active:scale-95 transition-colors"
+
+toggleBadgeCls : CssClass
+toggleBadgeCls =
+    "inline-flex items-baseline gap-0.5"
+
+toggleRowCls : CssClass
+toggleRowCls =
+    "flex flex-wrap gap-x-3"
+
 -- ------------------------------------------------------------------
 -- Специальные ссылки
 -- ------------------------------------------------------------------
@@ -134,10 +163,6 @@ pulseAnimationCls =
 -- ------------------------------------------------------------------
 -- Debug/Game Over
 -- ------------------------------------------------------------------
-debugInfoCls : CssClass
-debugInfoCls =
-    "mt-6 pt-4 border-t-2 border-gritty-400 bg-gritty-50 shadow-inner rounded-md p-2 font-mono text-base leading-none tracking-widest"
-
 gameOverCls : CssClass
 gameOverCls =
     "text-2xl font-mono text-accent"

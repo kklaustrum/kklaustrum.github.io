@@ -1,9 +1,11 @@
-module Engine exposing (VisitResult, applyPageVisit, applyStashChoice, applyEquipChoice)
+module Engine exposing (VisitResult, applyPageVisit, applyStashChoice, applyEquipChoice, applyMoveToStash, applyMoveToEquipped, itemEffectHint)
 
+import Dict exposing (Dict)
 import World exposing (WorldState)
 import Character exposing (Character)
 import Items
-import Utils exposing (maybeWhen)
+import Utils exposing (maybeWhen, formatParamShort)
+import Locale exposing (Locale)
 
 type alias VisitResult =
     { world : WorldState
@@ -49,3 +51,35 @@ applyEquipChoice itemId character =
         |> Character.equipItem itemId
         |> applyItemEffects itemId
         |> Character.updatePrevInventory
+
+removeItemEffects : String -> Character -> Character
+removeItemEffects itemId character =
+    Items.getItemById itemId
+        |> Maybe.map Items.getItemEffects
+        |> Maybe.map (\effects -> Character.removeEffects effects character)
+        |> Maybe.withDefault character
+
+applyMoveToStash : String -> Character -> Character
+applyMoveToStash itemId character =
+    character
+        |> removeItemEffects itemId
+        |> Character.moveToStash itemId
+
+applyMoveToEquipped : String -> Character -> Character
+applyMoveToEquipped itemId character =
+    character
+        |> Character.moveToEquipped itemId
+        |> applyItemEffects itemId
+
+itemEffectHint : Locale -> String -> String
+itemEffectHint locale itemId =
+    Items.getItemById itemId
+        |> Maybe.map Items.getItemEffects
+        |> Maybe.map (formatEffects locale)
+        |> Maybe.withDefault ""
+
+formatEffects : Locale -> Dict String Int -> String
+formatEffects locale effects =
+    Dict.toList effects
+        |> List.map (Utils.formatParamShort locale)
+        |> String.join " "

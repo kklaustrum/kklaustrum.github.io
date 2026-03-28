@@ -1,14 +1,11 @@
 module Character exposing
     ( Character
     , initCharacter
-    , addToStash
+    , addToStash, moveToStash, moveToEquipped
     , equipItem
-    , applyEffects
+    , applyEffects, removeEffects
     , getParam
-    , stashList
-    , equippedList
     , updatePrevInventory
-    , allParamsData
     , hasAtLeastItems
     , hasPickedUp
     , hasItem
@@ -32,9 +29,6 @@ type alias ParamConfig =
     , labelField : Locale -> String
     }
 
-allParamsData : Character -> Dict String Int
-allParamsData character = character.params
-
 initParams : Dict String Int
 initParams =
     Dict.fromList (List.map (\( param, value ) -> ( paramToString param, value )) Params.defaultValues)
@@ -57,6 +51,20 @@ addToStash itemId character =
         True  -> character
         False -> { character | stash = character.stash ++ [ itemId ] }
 
+moveToStash : String -> Character -> Character
+moveToStash itemId character =
+    { character
+        | equipped = List.filter (\id -> id /= itemId) character.equipped
+        , stash    = character.stash ++ [ itemId ]
+    }
+
+moveToEquipped : String -> Character -> Character
+moveToEquipped itemId character =
+    { character
+        | stash    = List.filter (\id -> id /= itemId) character.stash
+        , equipped = character.equipped ++ [ itemId ]
+    }
+
 equipItem : String -> Character -> Character
 equipItem itemId character =
     case List.member itemId (allItems character) of
@@ -66,6 +74,13 @@ equipItem itemId character =
 applyEffects : Dict String Int -> Character -> Character
 applyEffects effects character =
     { character | params = Dict.foldl updateParam character.params effects }
+
+removeEffects : Dict String Int -> Character -> Character
+removeEffects effects character =
+    let
+        negated = Dict.map (\_ v -> -v) effects
+    in
+    { character | params = Dict.foldl updateParam character.params negated }
 
 updateParam : comparable -> Int -> Dict comparable Int -> Dict comparable Int
 updateParam key delta params =
@@ -79,12 +94,6 @@ updateParam key delta params =
 getParam : String -> Character -> Int
 getParam paramName character =
     Dict.get paramName character.params |> Maybe.withDefault 0
-
-stashList : Character -> List String
-stashList character = character.stash
-
-equippedList : Character -> List String
-equippedList character = character.equipped
 
 hasPickedUp : String -> Character -> Bool
 hasPickedUp itemId char =

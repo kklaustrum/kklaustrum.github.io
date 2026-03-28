@@ -6,7 +6,7 @@ module Utils exposing
     , isBookUrl
     , formatVisitPath
     , formatInventoryData, formatEquippedData, formatStashData
-    , formatParamsData, formatParamLabel, formatParamValue
+    , formatParamsData, formatParamLabel, formatParamValue, formatParamShort
     , formatItemPickup
     , debugData, joinList
     , maybeWhen, listWhen
@@ -114,6 +114,15 @@ formatParamLabel locale ( key, _ ) =
     stringToParam key
         |> Maybe.map (Params.getParamLabel locale)
         |> Maybe.withDefault key
+
+formatParamShort : Locale -> ( String, Int ) -> String
+formatParamShort locale entry =
+    let
+        label = formatParamLabel locale entry
+        value = formatParamValue locale entry
+        sign = if Tuple.second entry > 0 then "+" else ""
+    in
+    label ++ sign ++ value
 
 formatInventoryData : Locale -> List String -> String
 formatInventoryData locale items =

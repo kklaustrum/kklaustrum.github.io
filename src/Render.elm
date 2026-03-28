@@ -17,7 +17,7 @@ import Character exposing (Character)
 import UiClasses exposing (..)
 import Components exposing (..)
 import Utils exposing (Config, debugData, formatItemPickup)
-import Types exposing (SecretContent, ExtraChoices, RenderContext)
+import Types exposing (SecretContent, ExtraChoices, RenderContext, EquippedItems(..), StashItems(..))
 import Items
 
 type alias HtmlList = List (Html Msg)
@@ -32,22 +32,41 @@ pageContainer : HtmlList -> Html Msg
 pageContainer content =
     Components.novelContainer content
 
+toEquippedItem : (Locale -> String -> String) -> Locale -> String -> (String, String, Msg)
+toEquippedItem itemHint locale id =
+    (id, itemHint locale id, MoveToStash id)
+
+toStashItem : (Locale -> String -> String) -> Locale -> String -> (String, String, Msg)
+toStashItem itemHint locale id =
+    (id, itemHint locale id, MoveToEquipped id)
+
 pageLayout : RenderContext -> PageContent -> HtmlList
 pageLayout ctx content =
     let
         debugInfo = debugData ctx.world ctx.currentPage
+        { locale, character, config, itemHint } = ctx
+        { stash, equipped, params } = character
+        { showDebugInfo } = config
+
+        equippedItems =
+            equipped
+                |> List.map (toEquippedItem itemHint locale)
+                |> EquippedItems
+
+        stashItems =
+            stash
+                |> List.map (toStashItem itemHint locale)
+                |> StashItems
     in
     List.concat
         [ [ content.title ]
         , content.content
-        , [ statsGrid
-                (paramsSection ctx.locale (Character.allParamsData ctx.character))
-                (inventorySection ctx.locale ctx.character.stash ctx.character.equipped)
-          ]
-        , [ statsGrid
-                (currentPageSection ctx.config.showDebugInfo ctx.locale debugInfo.currentPage debugInfo.visits)
-                (pathSection ctx.config.showDebugInfo ctx.locale debugInfo.path)
-          ]
+        , [ statsLayout
+            (paramsSection locale params)
+            (inventorySection locale equippedItems stashItems)
+            (currentPageSection showDebugInfo locale debugInfo.currentPage debugInfo.visits)
+            (pathSection showDebugInfo locale debugInfo.path)
+        ]
         , nonEmptyChoices content.choices
         ]
 

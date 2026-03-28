@@ -13,7 +13,7 @@ import Veil exposing (loadContent, Page, Book, storyline, ResourceError(..))
 import Utils exposing (defaultConfig, bookUrl)
 import World exposing (WorldState, initWorld)
 import Character exposing (Character, initCharacter)
-import Engine exposing (VisitResult, applyPageVisit, applyStashChoice, applyEquipChoice)
+import Engine exposing (VisitResult, applyPageVisit, applyStashChoice, applyEquipChoice, applyMoveToStash, applyMoveToEquipped, itemEffectHint)
 import Types exposing (RenderContext)
 
 -- ------------------------------------------------------------------
@@ -62,6 +62,7 @@ toRenderContext data =
     , currentPage = data.currentPage
     , pendingItem = data.pendingItem
     , book        = data.storyline
+    , itemHint = Engine.itemEffectHint
     }
 
 updateReady : (ReadyData -> ReadyData) -> Model -> ( Model, Cmd Msg )
@@ -119,6 +120,16 @@ update msg model =
 
         ResetToStart ->
             updateReady (\data -> { data | currentPage = "start" }) model
+
+        MoveToStash itemId ->
+            updateReady (\data ->
+                withCharacter (Engine.applyMoveToStash itemId data.character) Nothing data
+            ) model
+
+        MoveToEquipped itemId ->
+            updateReady (\data ->
+                withCharacter (Engine.applyMoveToEquipped itemId data.character) Nothing data
+            ) model
 
 -- ------------------------------------------------------------------
 -- View

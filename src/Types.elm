@@ -7,6 +7,7 @@ module Types exposing
     , LocaleString
     , LocaleChoices
     , RenderContext
+    , EquippedItems(..), StashItems(..)
     )
 
 import Locale exposing (Locale)
@@ -14,6 +15,8 @@ import World exposing (WorldState)
 import Character exposing (Character)
 import Utils exposing (Config)
 import Veil exposing (Book)
+import Locale exposing (Locale)
+import Messages exposing (Msg(..))
 
 type alias RenderContext =
     { config : Config
@@ -23,6 +26,7 @@ type alias RenderContext =
     , currentPage : String
     , pendingItem : Maybe String
     , book : Book
+    , itemHint : Locale -> String -> String
     }
 
 type alias LocaleString = Locale -> String
@@ -50,3 +54,6 @@ type alias Rule =
     }
 
 type alias Condition = Character -> Bool
+
+type EquippedItems = EquippedItems (List (String, String, Msg))
+type StashItems = StashItems (List (String, String, Msg))

@@ -19,9 +19,12 @@ viewPage ctx =
         content =
             case pageResult of
                 NormalPage extraChoices ->
-                    case Veil.getPage ctx.currentPage ctx.book of
-                        Just page -> renderNormalPage ctx page extraChoices
-                        Nothing -> renderPageNotFound ctx
+                    case ctx.pendingItem of
+                        Just itemId -> renderItemPickup ctx itemId
+                        Nothing ->
+                            case Veil.getPage ctx.currentPage ctx.book of
+                                Just page -> renderNormalPage ctx page extraChoices
+                                Nothing   -> renderPageNotFound ctx
 
                 SecretPage secretContent ->
                     renderSecretPage ctx secretContent

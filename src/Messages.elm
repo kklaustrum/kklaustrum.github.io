@@ -11,6 +11,8 @@ type Msg
     | ResetToStart
     | StashItem String
     | EquipItem String
+    | MoveToStash String
+    | MoveToEquipped String
 
 goToPage : String -> Msg
 goToPage = GoToPage
