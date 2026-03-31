@@ -6,7 +6,7 @@ module Utils exposing
     , isBookUrl
     , formatVisitPath
     , formatInventoryData, formatEquippedData, formatStashData
-    , formatParamsData, formatParamLabel, formatParamValue, formatParamShort
+    , formatParamsData, formatParamLabel, formatParamValue, formatParamShort, formatEffects
     , formatItemPickup
     , debugData, joinList
     , maybeWhen, listWhen
@@ -141,6 +141,12 @@ formatStashData locale items =
 formatItemPickup : Locale -> String -> String
 formatItemPickup locale itemName =
     replaceLocalePlaceholder stringHelpers locale.itemPickedUp itemName
+
+formatEffects : Locale -> Dict String Int -> String
+formatEffects locale effects =
+    Dict.toList effects
+        |> List.map (formatParamShort locale)
+        |> String.join " "
 
 maybeWhen : Bool -> a -> Maybe a
 maybeWhen condition value =

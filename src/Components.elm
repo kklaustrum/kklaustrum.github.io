@@ -1,7 +1,7 @@
 module Components exposing
     ( novelContainer
     , statsGrid, statsLayout
-    , choiceButton
+    , actionButton, choiceButton
     , viewChoices
     , titleHtml
     , contentHtml
@@ -98,6 +98,11 @@ statsLayout topLeft topRight bottomLeft bottomRight =
         , div [] bottomLeft
         , div [] bottomRight
         ]
+
+actionButton : String -> Msg -> Html Msg
+actionButton label msg =
+    div [ class centeredChoiceCls ]
+        [ button [ onClick msg, class choiceBtnCls ] [ text label ] ]
 
 choiceButton : (String, String) -> Html Msg
 choiceButton (label, pageId) =

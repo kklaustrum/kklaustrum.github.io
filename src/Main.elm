@@ -11,9 +11,9 @@ import Locale exposing (Locale)
 import HttpError exposing (resourceErrorToString)
 import Veil exposing (loadContent, Page, Book, storyline, ResourceError(..))
 import Utils exposing (defaultConfig, bookUrl)
-import World exposing (WorldState, initWorld)
+import World exposing (WorldState, initWorld, startPage, setPendingItem)
 import Character exposing (Character, initCharacter)
-import Engine exposing (VisitResult, applyPageVisit, applyStashChoice, applyEquipChoice, applyMoveToStash, applyMoveToEquipped, itemEffectHint)
+import Engine exposing (VisitResult, applyPageVisit)
 import Types exposing (RenderContext)
 
 -- ------------------------------------------------------------------
@@ -25,7 +25,6 @@ type alias ReadyData =
     , storyline   : Book
     , world       : WorldState
     , character   : Character
-    , pendingItem : Maybe String
     }
 
 type Model
@@ -46,11 +45,10 @@ currentLocale model =
 initReady : Locale -> Book -> ReadyData
 initReady locale book =
     { locale      = locale
-    , currentPage = "start"
+    , currentPage = World.startPage
     , storyline   = book
     , world       = World.initWorld
     , character   = Character.initCharacter
-    , pendingItem = Nothing
     }
 
 toRenderContext : ReadyData -> RenderContext
@@ -60,9 +58,7 @@ toRenderContext data =
     , world       = data.world
     , character   = data.character
     , currentPage = data.currentPage
-    , pendingItem = data.pendingItem
     , book        = data.storyline
-    , itemHint = Engine.itemEffectHint
     }
 
 updateReady : (ReadyData -> ReadyData) -> Model -> ( Model, Cmd Msg )
@@ -73,11 +69,11 @@ updateReady f model =
 
 applyVisitResult : VisitResult -> String -> ReadyData -> ReadyData
 applyVisitResult result pageId data =
-    { data | currentPage = pageId, world = result.world, character = result.character, pendingItem = result.pendingItem }
+    { data | currentPage = pageId, world = result.world, character = result.character }
 
-withCharacter : Character -> Maybe String -> ReadyData -> ReadyData
-withCharacter char pending data =
-    { data | character = char, pendingItem = pending }
+withCharacter : Character -> ReadyData -> ReadyData
+withCharacter char data =
+    { data | character = char }
 
 -- ------------------------------------------------------------------
 -- Init
@@ -108,27 +104,16 @@ update msg model =
                 applyVisitResult (Engine.applyPageVisit pageId data.currentPage data.world data.character) pageId data
             ) model
 
-        StashItem itemId ->
-            updateReady (\data ->
-                withCharacter (applyStashChoice itemId data.character) Nothing data
-            ) model
+        ReturnToStart ->
+            updateReady (\data -> { data | currentPage = World.startPage, world = World.initWorld }) model
 
-        EquipItem itemId ->
+        ItemAction itemMsg ->
             updateReady (\data ->
-                withCharacter (applyEquipChoice itemId data.character) Nothing data
-            ) model
-
-        ResetToStart ->
-            updateReady (\data -> { data | currentPage = "start" }) model
-
-        MoveToStash itemId ->
-            updateReady (\data ->
-                withCharacter (Engine.applyMoveToStash itemId data.character) Nothing data
-            ) model
-
-        MoveToEquipped itemId ->
-            updateReady (\data ->
-                withCharacter (Engine.applyMoveToEquipped itemId data.character) Nothing data
+                let
+                    newCharacter = Engine.applyItemMsg itemMsg data.character
+                    newWorld     = World.setPendingItem Nothing data.world
+                in
+                { data | character = newCharacter, world = newWorld }
             ) model
 
 -- ------------------------------------------------------------------

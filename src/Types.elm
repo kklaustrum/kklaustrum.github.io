@@ -24,9 +24,7 @@ type alias RenderContext =
     , world : WorldState
     , character : Character
     , currentPage : String
-    , pendingItem : Maybe String
     , book : Book
-    , itemHint : Locale -> String -> String
     }
 
 type alias LocaleString = Locale -> String

@@ -1,30 +1,39 @@
-module Messages exposing (Msg(..), goToPage, resetToStart, stashItem, equipItem)
+module Messages exposing (Msg(..), ItemMsg(..), goToPage, returnToStart, stashItem, equipItem, moveToStash, moveToEquipped)
 
 import Veil exposing (Book, ResourceError)
 
 -- ------------------------------------------------------------------
--- Сообщения, которыми обмениваются все части приложения
+-- Inter-component messages
 -- ------------------------------------------------------------------
+type ItemMsg
+    = Stash String
+    | Equip String
+    | MoveToStash String
+    | MoveToEquipped String
+
 type Msg
     = ContentLoaded (Result ResourceError Book)
     | GoToPage String
-    | ResetToStart
-    | StashItem String
-    | EquipItem String
-    | MoveToStash String
-    | MoveToEquipped String
+    | ReturnToStart
+    | ItemAction ItemMsg
 
 goToPage : String -> Msg
 goToPage = GoToPage
 
-resetToStart : Msg
-resetToStart = ResetToStart
+returnToStart : Msg
+returnToStart = ReturnToStart
 
 contentLoaded : Result ResourceError Book -> Msg
 contentLoaded = ContentLoaded
 
 stashItem : String -> Msg
-stashItem = StashItem
+stashItem id = ItemAction (Stash id)
 
 equipItem : String -> Msg
-equipItem = EquipItem
+equipItem id = ItemAction (Equip id)
+
+moveToStash : String -> Msg
+moveToStash id = ItemAction (MoveToStash id)
+
+moveToEquipped : String -> Msg
+moveToEquipped id = ItemAction (MoveToEquipped id)

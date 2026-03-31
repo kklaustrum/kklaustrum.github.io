@@ -18,7 +18,7 @@ import UiClasses exposing (..)
 import Components exposing (..)
 import Utils exposing (Config, debugData, formatItemPickup)
 import Types exposing (SecretContent, ExtraChoices, RenderContext, EquippedItems(..), StashItems(..))
-import Items
+import Items exposing (itemEffectHint)
 
 type alias HtmlList = List (Html Msg)
 
@@ -34,28 +34,28 @@ pageContainer content =
 
 toEquippedItem : (Locale -> String -> String) -> Locale -> String -> (String, String, Msg)
 toEquippedItem itemHint locale id =
-    (id, itemHint locale id, MoveToStash id)
+    (id, Items.itemEffectHint locale id, Messages.moveToStash id)
 
 toStashItem : (Locale -> String -> String) -> Locale -> String -> (String, String, Msg)
 toStashItem itemHint locale id =
-    (id, itemHint locale id, MoveToEquipped id)
+    (id, Items.itemEffectHint locale id, Messages.moveToEquipped id)
 
 pageLayout : RenderContext -> PageContent -> HtmlList
 pageLayout ctx content =
     let
         debugInfo = debugData ctx.world ctx.currentPage
-        { locale, character, config, itemHint } = ctx
+        { locale, character, config } = ctx
         { stash, equipped, params } = character
         { showDebugInfo } = config
 
         equippedItems =
             equipped
-                |> List.map (toEquippedItem itemHint locale)
+                |> List.map (toEquippedItem Items.itemEffectHint locale)
                 |> EquippedItems
 
         stashItems =
             stash
-                |> List.map (toStashItem itemHint locale)
+                |> List.map (toStashItem Items.itemEffectHint locale)
                 |> StashItems
     in
     List.concat
@@ -90,7 +90,9 @@ renderPageNotFound ctx =
 
 renderGameOver : RenderContext -> HtmlList
 renderGameOver ctx =
-    [ gameOverNode ctx.locale.gameOver ]
+    [ gameOverNode ctx.locale.gameOver
+    , actionButton ctx.locale.backToHomeLabel ReturnToStart
+    ]
 
 renderSecretPage : RenderContext -> SecretContent -> HtmlList
 renderSecretPage ctx secretContent =

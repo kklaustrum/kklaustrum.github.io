@@ -2,12 +2,15 @@ module World exposing
     ( WorldState
     , initWorld, addVisitIfNew
     , visitCount, visitPath
-    , safePages
-    , isGameOverCandidate
+    , startPage, safePages
+    , isGameOverCandidate, setPendingItem
     )
 
 import Dict exposing (Dict)
 import Set exposing (Set)
+
+startPage : String
+startPage = "start"
 
 safePages : Set String
 safePages =
@@ -17,6 +20,7 @@ type alias WorldState =
     { visited : Set String
     , visitCounts : Dict String Int
     , visitHistory : List String
+    , pendingItem  : Maybe String
     }
 
 initWorld : WorldState
@@ -24,7 +28,12 @@ initWorld =
     { visited = Set.empty
     , visitCounts = Dict.empty
     , visitHistory = []
+    , pendingItem  = Nothing
     }
+
+setPendingItem : Maybe String -> WorldState -> WorldState
+setPendingItem pending world =
+    { world | pendingItem = pending }
 
 addVisit : String -> WorldState -> WorldState
 addVisit pageId world =

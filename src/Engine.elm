@@ -1,17 +1,25 @@
-module Engine exposing (VisitResult, applyPageVisit, applyStashChoice, applyEquipChoice, applyMoveToStash, applyMoveToEquipped, itemEffectHint)
+module Engine exposing (VisitResult, applyPageVisit, applyStashChoice, applyEquipChoice, applyMoveToStash, applyMoveToEquipped, applyItemMsg)
 
 import Dict exposing (Dict)
-import World exposing (WorldState)
+import World exposing (WorldState, setPendingItem)
 import Character exposing (Character)
 import Items
 import Utils exposing (maybeWhen, formatParamShort)
 import Locale exposing (Locale)
+import Messages exposing (ItemMsg(..))
 
 type alias VisitResult =
     { world : WorldState
     , character : Character
-    , pendingItem : Maybe String
     }
+
+applyItemMsg : ItemMsg -> Character -> Character
+applyItemMsg msg character =
+    case msg of
+        Stash id          -> applyStashChoice id character
+        Equip id          -> applyEquipChoice id character
+        MoveToStash id    -> applyMoveToStash id character
+        MoveToEquipped id -> applyMoveToEquipped id character
 
 applyItemEffects : String -> Character -> Character
 applyItemEffects itemId character =
@@ -33,10 +41,11 @@ applyPageVisit : String -> String -> WorldState -> Character -> VisitResult
 applyPageVisit pageId currentPage world character =
     let
         updatedCharacter = Character.updatePrevInventory character
+        visitedWorld     = World.addVisitIfNew pageId world currentPage
+        updatedWorld     = visitedWorld |> World.setPendingItem (pendingItemOnPage pageId updatedCharacter)
     in
-    { world       = World.addVisitIfNew pageId world currentPage
-    , character   = updatedCharacter
-    , pendingItem = pendingItemOnPage pageId updatedCharacter
+    { world     = updatedWorld
+    , character = updatedCharacter
     }
 
 applyStashChoice : String -> Character -> Character
@@ -70,16 +79,3 @@ applyMoveToEquipped itemId character =
     character
         |> Character.moveToEquipped itemId
         |> applyItemEffects itemId
-
-itemEffectHint : Locale -> String -> String
-itemEffectHint locale itemId =
-    Items.getItemById itemId
-        |> Maybe.map Items.getItemEffects
-        |> Maybe.map (formatEffects locale)
-        |> Maybe.withDefault ""
-
-formatEffects : Locale -> Dict String Int -> String
-formatEffects locale effects =
-    Dict.toList effects
-        |> List.map (Utils.formatParamShort locale)
-        |> String.join " "

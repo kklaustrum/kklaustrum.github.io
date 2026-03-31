@@ -19,7 +19,7 @@ viewPage ctx =
         content =
             case pageResult of
                 NormalPage extraChoices ->
-                    case ctx.pendingItem of
+                    case ctx.world.pendingItem of
                         Just itemId -> renderItemPickup ctx itemId
                         Nothing ->
                             case Veil.getPage ctx.currentPage ctx.book of
