@@ -8,7 +8,7 @@ import Character exposing (Character, hasPickedUp)
 import Items exposing (getItemFromPage)
 import Locale exposing (Locale)
 import Passages exposing (passageRule)
-import Types exposing (Rule, PageMode(..))
+import Types exposing (Rule, PageMode(..), emptyPageContent)
 import Utils exposing (maybeWhen)
 
 gameOverRule : Int -> Rule
@@ -44,7 +44,7 @@ evaluate rules world char page =
         folder rule maybeMode =
             case maybeMode of
                 Just mode -> Just mode
-                Nothing -> rule.evaluate world char page
+                Nothing   -> rule.evaluate world char page
     in
     List.foldl folder Nothing rules
         |> Maybe.withDefault (NormalPage [])

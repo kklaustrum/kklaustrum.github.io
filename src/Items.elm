@@ -6,13 +6,11 @@ module Items exposing
     , getItemFromPage
     , getItemById
     , getItemName
-    , getItemEffects, itemEffectHint
+    , getItemEffects
     )
 
 import Dict exposing (Dict)
 import Params exposing (Param(..), paramToString)
-import Utils exposing (formatEffects)
-import Locale exposing (Locale)
 
 type alias PageItem =
     { pageId : String
@@ -93,10 +91,3 @@ getItemEffects item =
         penalties = Dict.map (\_ value -> -value) item.penalties
     in
     Dict.union item.buffs penalties
-
-itemEffectHint : Locale -> String -> String
-itemEffectHint locale itemId =
-    getItemById itemId
-        |> Maybe.map getItemEffects
-        |> Maybe.map (Utils.formatEffects locale)
-        |> Maybe.withDefault ""

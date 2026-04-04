@@ -2,15 +2,19 @@ module Conditions exposing (Condition(..), evaluate)
 
 import Params exposing (Param(..), paramToString)
 import Character exposing (Character, hasAtLeastItems, hasItem, hasParam)
+import Traits exposing (Trait)
 
 type Condition
-    = HasAtLeastItems Int
+    = Always
+    | HasAtLeastItems Int
     | HasItem String
     | HasParam Param Int
+    | HasTrait Trait
 
 evaluate : Condition -> Character -> Bool
 evaluate condition char =
     case condition of
+        Always -> True
         HasAtLeastItems n ->
             hasAtLeastItems n char
 
@@ -18,4 +22,7 @@ evaluate condition char =
             hasItem itemId char
 
         HasParam param minValue ->
-            Character.hasParam (paramToString param) minValue char
+            Character.hasParam param minValue char
+
+        HasTrait trait ->
+            List.member trait char.traits

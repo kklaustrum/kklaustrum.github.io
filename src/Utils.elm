@@ -6,10 +6,10 @@ module Utils exposing
     , isBookUrl
     , formatVisitPath
     , formatInventoryData, formatEquippedData, formatStashData
-    , formatParamsData, formatParamLabel, formatParamValue, formatParamShort, formatEffects
+    , formatParamsData
     , formatItemPickup
     , debugData, joinList
-    , maybeWhen, listWhen
+    , maybeWhen, listWhen, itemAt
     )
 
 import World exposing (WorldState, visitCount, visitPath)
@@ -105,25 +105,6 @@ formatParamsData : Locale -> String
 formatParamsData locale =
     locale.paramsLabel
 
-formatParamValue : Locale -> ( String, Int ) -> String
-formatParamValue _ ( _, value ) =
-    String.fromInt value
-
-formatParamLabel : Locale -> ( String, Int ) -> String
-formatParamLabel locale ( key, _ ) =
-    stringToParam key
-        |> Maybe.map (Params.getParamLabel locale)
-        |> Maybe.withDefault key
-
-formatParamShort : Locale -> ( String, Int ) -> String
-formatParamShort locale entry =
-    let
-        label = formatParamLabel locale entry
-        value = formatParamValue locale entry
-        sign = if Tuple.second entry > 0 then "+" else ""
-    in
-    label ++ sign ++ value
-
 formatInventoryData : Locale -> List String -> String
 formatInventoryData locale items =
     case items of
@@ -142,12 +123,6 @@ formatItemPickup : Locale -> String -> String
 formatItemPickup locale itemName =
     replaceLocalePlaceholder stringHelpers locale.itemPickedUp itemName
 
-formatEffects : Locale -> Dict String Int -> String
-formatEffects locale effects =
-    Dict.toList effects
-        |> List.map (formatParamShort locale)
-        |> String.join " "
-
 maybeWhen : Bool -> a -> Maybe a
 maybeWhen condition value =
     case condition of
@@ -159,3 +134,8 @@ listWhen condition value =
     case condition of
         True -> [ value ]
         False -> []
+
+itemAt : Int -> List a -> Maybe a
+itemAt n list =
+    maybeWhen (n >= 0) list
+        |> Maybe.andThen (List.drop n >> List.head)

@@ -1,9 +1,8 @@
 module Types exposing
     ( PageMode(..)
     , ExtraChoices
-    , SecretContent
+    , PageContent, emptyPageContent
     , Rule
-    , Condition
     , LocaleString
     , LocaleChoices
     , RenderContext
@@ -15,7 +14,6 @@ import World exposing (WorldState)
 import Character exposing (Character)
 import Utils exposing (Config)
 import Veil exposing (Book)
-import Locale exposing (Locale)
 import Messages exposing (Msg(..))
 
 type alias RenderContext =
@@ -33,15 +31,19 @@ type alias LocaleChoices = Locale -> List ( String, String )
 
 type alias ExtraChoices = List ( String, String )
 
-type alias SecretContent =
+type alias PageContent =
     { title : String
     , content : String
     , choices : ExtraChoices
     }
 
+emptyPageContent : PageContent
+emptyPageContent =
+    { title = "", content = "", choices = [] }
+
 type PageMode
     = NormalPage ExtraChoices
-    | SecretPage SecretContent
+    | PassagePage PageContent
     | GameOverPage
     | PageNotFound String
     | ItemPickup String
@@ -50,8 +52,6 @@ type alias Rule =
     { id : String
     , evaluate : WorldState -> Character -> String -> Maybe PageMode
     }
-
-type alias Condition = Character -> Bool
 
 type EquippedItems = EquippedItems (List (String, String, Msg))
 type StashItems = StashItems (List (String, String, Msg))

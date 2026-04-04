@@ -10,23 +10,19 @@ module Character exposing
     , hasPickedUp
     , hasItem
     , hasParam
+    , addTrait
     )
 
 import Dict exposing (Dict)
 import Params exposing (Param(..), paramToString, defaultValues)
-import Locale exposing (Locale, is, en)
+import Traits exposing (Trait(..), defaultTraits)
 
 type alias Character =
     { stash    : List String
     , equipped : List String
     , prevAll  : List String
     , params   : Dict String Int
-    }
-
-type alias ParamConfig =
-    { key : Param
-    , default : Int
-    , labelField : Locale -> String
+    , traits   : List Trait
     }
 
 initParams : Dict String Int
@@ -39,6 +35,7 @@ initCharacter =
     , equipped = []
     , prevAll  = []
     , params   = initParams
+    , traits = Traits.defaultTraits
     }
 
 allItems : Character -> List String
@@ -111,6 +108,12 @@ hasItem : String -> Character -> Bool
 hasItem itemId character =
     List.member itemId (allItems character)
 
-hasParam : String -> Int -> Character -> Bool
-hasParam key minValue char =
-    getParam key char >= minValue
+hasParam : Param -> Int -> Character -> Bool
+hasParam param minValue character =
+    getParam (paramToString param) character >= minValue
+
+addTrait : Trait -> Character -> Character
+addTrait trait character =
+    case List.member trait character.traits of
+        True  -> character
+        False -> { character | traits = character.traits ++ [ trait ] }

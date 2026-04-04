@@ -4,8 +4,7 @@ import Dict exposing (Dict)
 import World exposing (WorldState, setPendingItem)
 import Character exposing (Character)
 import Items
-import Utils exposing (maybeWhen, formatParamShort)
-import Locale exposing (Locale)
+import Utils exposing (maybeWhen)
 import Messages exposing (ItemMsg(..))
 
 type alias VisitResult =

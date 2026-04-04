@@ -1,28 +1,24 @@
 module Render exposing
-    ( renderItemPickup
-    , renderPageNotFound
-    , renderGameOver
-    , renderNormalPage
-    , renderSecretPage
+    ( renderItemPickup, renderPageNotFound, renderGameOver, renderPassagePage,renderNormalPage
     , pageLayout
     , pageContainer
     )
 
 import Html exposing (Html)
-import Veil exposing (Page)
 import Messages exposing (Msg(..))
 import Locale exposing (Locale)
 import World exposing (WorldState)
 import Character exposing (Character)
 import UiClasses exposing (..)
 import Components exposing (..)
-import Utils exposing (Config, debugData, formatItemPickup)
-import Types exposing (SecretContent, ExtraChoices, RenderContext, EquippedItems(..), StashItems(..))
-import Items exposing (itemEffectHint)
+import Utils exposing (Config, debugData, formatItemPickup, listWhen)
+import Types exposing (PageContent, ExtraChoices, RenderContext, EquippedItems(..), StashItems(..))
+import Display exposing (itemEffectHint, itemName)
+import Veil exposing (Page)
 
 type alias HtmlList = List (Html Msg)
 
-type alias PageContent =
+type alias PageLayout =
     { title : Html Msg
     , content : HtmlList
     , choices : List (String, String)
@@ -34,13 +30,13 @@ pageContainer content =
 
 toEquippedItem : (Locale -> String -> String) -> Locale -> String -> (String, String, Msg)
 toEquippedItem itemHint locale id =
-    (id, Items.itemEffectHint locale id, Messages.moveToStash id)
+    (id, Display.itemEffectHint locale id, Messages.moveToStash id)
 
 toStashItem : (Locale -> String -> String) -> Locale -> String -> (String, String, Msg)
 toStashItem itemHint locale id =
-    (id, Items.itemEffectHint locale id, Messages.moveToEquipped id)
+    (id, Display.itemEffectHint locale id, Messages.moveToEquipped id)
 
-pageLayout : RenderContext -> PageContent -> HtmlList
+pageLayout : RenderContext -> PageLayout -> HtmlList
 pageLayout ctx content =
     let
         debugInfo = debugData ctx.world ctx.currentPage
@@ -50,12 +46,12 @@ pageLayout ctx content =
 
         equippedItems =
             equipped
-                |> List.map (toEquippedItem Items.itemEffectHint locale)
+                |> List.map (toEquippedItem Display.itemEffectHint locale)
                 |> EquippedItems
 
         stashItems =
             stash
-                |> List.map (toStashItem Items.itemEffectHint locale)
+                |> List.map (toStashItem Display.itemEffectHint locale)
                 |> StashItems
     in
     List.concat
@@ -72,12 +68,12 @@ pageLayout ctx content =
 
 nonEmptyChoices : ExtraChoices -> HtmlList
 nonEmptyChoices choices =
-    if List.isEmpty choices then [] else [ viewChoices choices ]
+    listWhen (not (List.isEmpty choices)) (viewChoices choices)
 
 renderItemPickup : RenderContext -> String -> HtmlList
 renderItemPickup ctx itemId =
     [ titleHtml ctx.locale.inventoryLabel
-    , paragraphNode (formatItemPickup ctx.locale (Items.getItemName itemId))
+    , paragraphNode (formatItemPickup ctx.locale (Display.itemName itemId))
     , itemChoiceButtons itemId
     ]
 
@@ -94,17 +90,18 @@ renderGameOver ctx =
     , actionButton ctx.locale.backToHomeLabel ReturnToStart
     ]
 
-renderSecretPage : RenderContext -> SecretContent -> HtmlList
-renderSecretPage ctx secretContent =
-    [ titleHtml secretContent.title
-    , paragraphNode secretContent.content
-    , viewChoices secretContent.choices
-    ]
+renderPassagePage : RenderContext -> PageContent -> HtmlList
+renderPassagePage ctx pc =
+    pageLayout ctx
+        { title   = titleHtml pc.title
+        , content = contentHtml [ pc.content ]
+        , choices = pc.choices
+        }
 
 renderNormalPage : RenderContext -> Page -> ExtraChoices -> HtmlList
 renderNormalPage ctx page extraChoices =
     pageLayout ctx
-        { title = titleHtml page.title
+        { title   = titleHtml page.title
         , content = contentHtml page.content
         , choices = page.choices ++ extraChoices
         }

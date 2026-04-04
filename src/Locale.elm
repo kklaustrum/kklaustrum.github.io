@@ -6,6 +6,7 @@ type alias Locale =
     , errorMessage : String      -- will be filled dynamically at runtime
     , pageNotFound : String
     , backToHomeLabel : String
+    , goDeeperLabel : String
     , httpBadUrl : String
     , httpTimeout : String
     , httpNetworkError : String
@@ -34,6 +35,7 @@ is =
     , errorMessage = ""
     , pageNotFound = "Síða fannst ekki"
     , backToHomeLabel = "Aftur á upphaf"
+    , goDeeperLabel = "Fara dýpra"
     , httpBadUrl = "Röng slóð: "
     , httpTimeout = "Tími útrunninn"
     , httpNetworkError = "Netvilla"
@@ -62,6 +64,7 @@ en =
     , errorMessage = ""
     , pageNotFound = "Page not found"
     , backToHomeLabel = "Back to start"
+    , goDeeperLabel = "Go deeper"
     , httpBadUrl = "Bad URL: "
     , httpTimeout = "Timeout"
     , httpNetworkError = "Network error"
