@@ -2,19 +2,18 @@ module Main exposing (main)
 
 import Browser
 import Html exposing (Html)
-import String
 
 import Views exposing (viewPage)
 import Components exposing (viewLoading, viewError)
 import Messages exposing (Msg(..))
 import Locale exposing (Locale)
-import HttpError exposing (resourceErrorToString)
-import Veil exposing (loadContent, Page, Book, storyline, ResourceError(..))
+import HttpError exposing (ResourceError(..), resourceErrorToString)
+import Veil exposing (loadContent, Page, Book, storyline)
 import Utils exposing (defaultConfig, bookUrl)
 import World exposing (WorldState, initWorld, startPage, setPendingItem)
 import Character exposing (Character, initCharacter)
 import Engine exposing (VisitResult, applyPageVisit)
-import Types exposing (RenderContext)
+import Types exposing (UIContext, GameContext)
 
 -- ------------------------------------------------------------------
 -- Model
@@ -51,13 +50,16 @@ initReady locale book =
     , character   = Character.initCharacter
     }
 
-toRenderContext : ReadyData -> RenderContext
-toRenderContext data =
-    { config      = defaultConfig
-    , locale      = data.locale
+toUIContext : ReadyData -> UIContext
+toUIContext data =
+    { config = defaultConfig
+    , locale = data.locale
+    }
+
+toGameContext : ReadyData -> GameContext
+toGameContext data =
+    { currentPage = data.currentPage
     , world       = data.world
-    , character   = data.character
-    , currentPage = data.currentPage
     , book        = data.storyline
     }
 
@@ -70,10 +72,6 @@ updateReady f model =
 applyVisitResult : VisitResult -> String -> ReadyData -> ReadyData
 applyVisitResult result pageId data =
     { data | currentPage = pageId, world = result.world, character = result.character }
-
-withCharacter : Character -> ReadyData -> ReadyData
-withCharacter char data =
-    { data | character = char }
 
 -- ------------------------------------------------------------------
 -- Init
@@ -126,7 +124,9 @@ view model =
             viewLoading locale
 
         Ready data ->
-            viewPage (toRenderContext data)
+            viewPage (toUIContext data)
+                     (toGameContext data)
+                     data.character
 
         Error locale errMsg ->
             viewError locale errMsg

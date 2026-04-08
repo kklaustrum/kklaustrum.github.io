@@ -5,10 +5,11 @@ module Types exposing
     , Rule
     , LocaleString
     , LocaleChoices
-    , RenderContext
+    , UIContext, GameContext, InventoryContext
     , EquippedItems(..), StashItems(..)
     )
 
+import Dict exposing (Dict)
 import Locale exposing (Locale)
 import World exposing (WorldState)
 import Character exposing (Character)
@@ -16,13 +17,21 @@ import Utils exposing (Config)
 import Veil exposing (Book)
 import Messages exposing (Msg(..))
 
-type alias RenderContext =
+type alias UIContext =
     { config : Config
     , locale : Locale
-    , world : WorldState
-    , character : Character
-    , currentPage : String
-    , book : Book
+    }
+
+type alias GameContext =
+    { currentPage : String
+    , world       : WorldState
+    , book        : Book
+    }
+
+type alias InventoryContext =
+    { stash    : List String
+    , equipped : List String
+    , params   : Dict String Int
     }
 
 type alias LocaleString = Locale -> String

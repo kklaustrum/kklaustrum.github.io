@@ -9,35 +9,43 @@ import Veil exposing (Book)
 import Messages exposing (Msg(..))
 import Render exposing (..)
 import Rules exposing (standardRules, evaluate)
-import Types exposing (PageMode(..), RenderContext)
+import Types exposing (PageMode(..), UIContext, GameContext, InventoryContext)
+
+toInventoryContext : Character -> InventoryContext
+toInventoryContext char =
+    { stash    = char.stash
+    , equipped = char.equipped
+    , params   = char.params
+    }
 
 -- PageMode routing: NormalPage always has a book entry and merges extra
 -- choices from passages. PassagePage is for code-only pages with non-empty
 -- secret content. SecretPage was removed — it was conceptually identical
 -- to PassagePage but without the book/passage distinction.
 -- collectPassages falls back to autoBack when no outgoing passages exist.
-viewPage : RenderContext -> Html Msg
-viewPage ctx =
+viewPage : UIContext -> GameContext -> Character -> Html Msg
+viewPage ui game char =
     let
-        pageResult = evaluate (standardRules ctx.locale) ctx.world ctx.character ctx.currentPage
+        pageResult = evaluate (standardRules ui.locale) game.world char game.currentPage
+        inventory  = toInventoryContext char
 
         content =
             case pageResult of
                 NormalPage extraChoices ->
-                    case Veil.getPage ctx.currentPage ctx.book of
-                        Just page -> renderNormalPage ctx page extraChoices
-                        Nothing   -> renderPageNotFound ctx
+                    case Veil.getPage game.currentPage game.book of
+                        Just page -> renderNormalPage ui game inventory page extraChoices
+                        Nothing   -> renderPageNotFound ui game
 
                 PassagePage pageContent ->
-                    renderPassagePage ctx pageContent
+                    renderPassagePage ui game inventory pageContent
 
                 GameOverPage ->
-                    renderGameOver ctx
+                    renderGameOver ui
 
                 ItemPickup itemName ->
-                    renderItemPickup ctx itemName
+                    renderItemPickup ui itemName
 
                 PageNotFound _ ->
-                    renderPageNotFound ctx
+                    renderPageNotFound ui game
     in
     pageContainer content

@@ -62,6 +62,7 @@ routeChoices route fromPage locale =
         , Maybe.map (\p -> ( route.nextLabel locale, p )) next
         ]
 
+-- Label is ignored if a route exists. Always set for API consistency.
 passage : Locale -> PassageArgs -> Passage
 passage locale args =
     { fromPage   = args.from
@@ -70,25 +71,21 @@ passage locale args =
     , condition  = Always
     , grantTrait = Nothing
     , route      = Nothing
-    , secret     = Just { title = "", content = "", choices = backTo locale args.from }
+    , secret     = Just { emptyPageContent | choices = backTo locale args.from }
     }
 
 withCondition : Condition -> Passage -> Passage
 withCondition cond p =
     { p | condition = cond }
 
-emptySecret : PageContent
-emptySecret =
-    { title = "", content = "", choices = [] }
-
 withTitle : String -> Passage -> Passage
 withTitle title p =
-    let secret = Maybe.withDefault emptySecret p.secret
+    let secret = Maybe.withDefault Types.emptyPageContent p.secret
     in { p | secret = Just { secret | title = title } }
 
 withBody : String -> Passage -> Passage
 withBody body p =
-    let secret = Maybe.withDefault emptySecret p.secret
+    let secret = Maybe.withDefault Types.emptyPageContent p.secret
     in { p | secret = Just { secret | content = body } }
 
 withTrait : Trait -> Passage -> Passage

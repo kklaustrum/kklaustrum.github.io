@@ -1,6 +1,7 @@
 module Messages exposing (Msg(..), ItemMsg(..), goToPage, returnToStart, stashItem, equipItem, moveToStash, moveToEquipped)
 
-import Veil exposing (Book, ResourceError)
+import Veil exposing (Book)
+import HttpError exposing (ResourceError)
 
 -- ------------------------------------------------------------------
 -- Inter-component messages

@@ -8,11 +8,10 @@ import Html exposing (Html)
 import Messages exposing (Msg(..))
 import Locale exposing (Locale)
 import World exposing (WorldState)
-import Character exposing (Character)
 import UiClasses exposing (..)
 import Components exposing (..)
 import Utils exposing (Config, debugData, formatItemPickup, listWhen)
-import Types exposing (PageContent, ExtraChoices, RenderContext, EquippedItems(..), StashItems(..))
+import Types exposing (PageContent, ExtraChoices, UIContext, GameContext, InventoryContext, EquippedItems(..), StashItems(..))
 import Display exposing (itemEffectHint, itemName)
 import Veil exposing (Page)
 
@@ -28,30 +27,30 @@ pageContainer : HtmlList -> Html Msg
 pageContainer content =
     Components.novelContainer content
 
-toEquippedItem : (Locale -> String -> String) -> Locale -> String -> (String, String, Msg)
-toEquippedItem itemHint locale id =
+toEquippedItem : Locale -> String -> (String, String, Msg)
+toEquippedItem locale id =
     (id, Display.itemEffectHint locale id, Messages.moveToStash id)
 
-toStashItem : (Locale -> String -> String) -> Locale -> String -> (String, String, Msg)
-toStashItem itemHint locale id =
+toStashItem : Locale -> String -> (String, String, Msg)
+toStashItem locale id =
     (id, Display.itemEffectHint locale id, Messages.moveToEquipped id)
 
-pageLayout : RenderContext -> PageLayout -> HtmlList
-pageLayout ctx content =
+pageLayout : UIContext -> GameContext -> InventoryContext -> PageLayout -> HtmlList
+pageLayout ui game inventory content =
     let
-        debugInfo = debugData ctx.world ctx.currentPage
-        { locale, character, config } = ctx
-        { stash, equipped, params } = character
+        debugInfo = debugData game.world game.currentPage
+        { locale, config } = ui
+        { stash, equipped, params } = inventory
         { showDebugInfo } = config
 
         equippedItems =
             equipped
-                |> List.map (toEquippedItem Display.itemEffectHint locale)
+                |> List.map (toEquippedItem locale)
                 |> EquippedItems
 
         stashItems =
             stash
-                |> List.map (toStashItem Display.itemEffectHint locale)
+                |> List.map (toStashItem locale)
                 |> StashItems
     in
     List.concat
@@ -70,37 +69,37 @@ nonEmptyChoices : ExtraChoices -> HtmlList
 nonEmptyChoices choices =
     listWhen (not (List.isEmpty choices)) (viewChoices choices)
 
-renderItemPickup : RenderContext -> String -> HtmlList
-renderItemPickup ctx itemId =
-    [ titleHtml ctx.locale.inventoryLabel
-    , paragraphNode (formatItemPickup ctx.locale (Display.itemName itemId))
+renderItemPickup : UIContext -> String -> HtmlList
+renderItemPickup ui itemId =
+    [ titleHtml ui.locale.inventoryLabel
+    , paragraphNode (formatItemPickup ui.locale (Display.itemName itemId))
     , itemChoiceButtons itemId
     ]
 
-renderPageNotFound : RenderContext -> HtmlList
-renderPageNotFound ctx =
-    [ errorTitleNode ctx.locale.pageNotFound
-    , paragraphNode ("ID: " ++ ctx.currentPage)
-    , singleChoice ctx.locale.backToHomeLabel "start"
+renderPageNotFound : UIContext -> GameContext -> HtmlList
+renderPageNotFound ui game =
+    [ errorTitleNode ui.locale.pageNotFound
+    , paragraphNode ("ID: " ++ game.currentPage)
+    , singleChoice ui.locale.backToHomeLabel "start"
     ]
 
-renderGameOver : RenderContext -> HtmlList
-renderGameOver ctx =
-    [ gameOverNode ctx.locale.gameOver
-    , actionButton ctx.locale.backToHomeLabel ReturnToStart
+renderGameOver : UIContext -> HtmlList
+renderGameOver ui =
+    [ gameOverNode ui.locale.gameOver
+    , actionButton ui.locale.backToHomeLabel ReturnToStart
     ]
 
-renderPassagePage : RenderContext -> PageContent -> HtmlList
-renderPassagePage ctx pc =
-    pageLayout ctx
+renderPassagePage : UIContext -> GameContext -> InventoryContext -> PageContent -> HtmlList
+renderPassagePage ui game inventory pc =
+    pageLayout ui game inventory
         { title   = titleHtml pc.title
         , content = contentHtml [ pc.content ]
         , choices = pc.choices
         }
 
-renderNormalPage : RenderContext -> Page -> ExtraChoices -> HtmlList
-renderNormalPage ctx page extraChoices =
-    pageLayout ctx
+renderNormalPage : UIContext -> GameContext -> InventoryContext -> Page -> ExtraChoices -> HtmlList
+renderNormalPage ui game inventory page extraChoices =
+    pageLayout ui game inventory
         { title   = titleHtml page.title
         , content = contentHtml page.content
         , choices = page.choices ++ extraChoices

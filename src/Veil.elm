@@ -4,12 +4,12 @@ module Veil exposing
     , Book
     , storyline
     , getPage
-    , ResourceError(..)
     )
 
 import Http exposing (expectJson, emptyBody, Error)
 import Json.Decode as D exposing (Decoder)
 import Dict exposing (Dict)
+import HttpError exposing (ResourceError(..))
 
 type alias Page =
     { title : String
@@ -19,9 +19,6 @@ type alias Page =
 
 type Book
     = JsonBook (Dict String Page)
-
-type ResourceError
-    = HttpError Error
 
 getPage : String -> Book -> Maybe Page
 getPage pageId book =

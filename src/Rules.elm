@@ -8,7 +8,7 @@ import Character exposing (Character, hasPickedUp)
 import Items exposing (getItemFromPage)
 import Locale exposing (Locale)
 import Passages exposing (passageRule)
-import Types exposing (Rule, PageMode(..), emptyPageContent)
+import Types exposing (Rule, PageMode(..))
 import Utils exposing (maybeWhen)
 
 gameOverRule : Int -> Rule

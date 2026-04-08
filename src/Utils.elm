@@ -17,7 +17,6 @@ import Dict exposing (Dict)
 import Set exposing (Set)
 import Locale exposing (Locale, is, en)
 import String exposing (fromInt)
-import Messages exposing (Msg(..))
 import Params exposing (stringToParam, getParamLabel)
 
 type alias Config =

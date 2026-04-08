@@ -1,8 +1,9 @@
-module HttpError exposing (httpErrorToString, resourceErrorToString)
+module HttpError exposing (ResourceError(..), httpErrorToString, resourceErrorToString)
 
 import Http exposing (Error)
 import Locale exposing (Locale)
-import Veil exposing (ResourceError(..))
+
+type ResourceError = HttpError Error
 
 httpErrorToString : Locale -> Error -> String
 httpErrorToString locale err =
