@@ -10,7 +10,7 @@ import Locale exposing (Locale)
 import HttpError exposing (ResourceError(..), resourceErrorToString)
 import Veil exposing (loadContent, Page, Book, storyline)
 import Utils exposing (defaultConfig, bookUrl)
-import World exposing (WorldState, initWorld, startPage, setPendingItem)
+import World exposing (WorldState, initWorld, startPage)
 import Character exposing (Character, initCharacter)
 import Engine exposing (VisitResult, applyPageVisit)
 import Types exposing (UIContext, GameContext)
@@ -107,11 +107,7 @@ update msg model =
 
         ItemAction itemMsg ->
             updateReady (\data ->
-                let
-                    newCharacter = Engine.applyItemMsg itemMsg data.character
-                    newWorld     = World.setPendingItem Nothing data.world
-                in
-                { data | character = newCharacter, world = newWorld }
+                { data | character = Engine.applyItemMsg itemMsg data.character }
             ) model
 
 -- ------------------------------------------------------------------

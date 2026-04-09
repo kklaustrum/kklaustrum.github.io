@@ -1,7 +1,7 @@
 module Engine exposing (VisitResult, applyPageVisit, applyStashChoice, applyEquipChoice, applyMoveToStash, applyMoveToEquipped, applyItemMsg)
 
 import Dict exposing (Dict)
-import World exposing (WorldState, setPendingItem)
+import World exposing (WorldState)
 import Character exposing (Character)
 import Items
 import Utils exposing (maybeWhen)
@@ -38,13 +38,8 @@ pendingItemOnPage pageId character =
 
 applyPageVisit : String -> String -> WorldState -> Character -> VisitResult
 applyPageVisit pageId currentPage world character =
-    let
-        updatedCharacter = Character.updatePrevInventory character
-        visitedWorld     = World.addVisitIfNew pageId world currentPage
-        updatedWorld     = visitedWorld |> World.setPendingItem (pendingItemOnPage pageId updatedCharacter)
-    in
-    { world     = updatedWorld
-    , character = updatedCharacter
+    { world     = World.addVisitIfNew pageId world currentPage
+    , character = Character.updatePrevInventory character
     }
 
 applyStashChoice : String -> Character -> Character

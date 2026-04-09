@@ -1,11 +1,11 @@
 module Types exposing
     ( PageMode(..)
     , ExtraChoices
-    , PageContent, emptyPageContent
+    , Page, PageContent, emptyPageContent
     , Rule
     , LocaleString
     , LocaleChoices
-    , UIContext, GameContext, InventoryContext
+    , UIContext, GameContext, CharacterContext
     , EquippedItems(..), StashItems(..)
     )
 
@@ -16,6 +16,7 @@ import Character exposing (Character)
 import Utils exposing (Config)
 import Veil exposing (Book)
 import Messages exposing (Msg(..))
+import Traits exposing (Trait(..))
 
 type alias UIContext =
     { config : Config
@@ -28,10 +29,11 @@ type alias GameContext =
     , book        : Book
     }
 
-type alias InventoryContext =
+type alias CharacterContext =
     { stash    : List String
     , equipped : List String
     , params   : Dict String Int
+    , traits   : List Trait
     }
 
 type alias LocaleString = Locale -> String
@@ -44,6 +46,12 @@ type alias PageContent =
     { title : String
     , content : String
     , choices : ExtraChoices
+    }
+
+type alias Page =
+    { title : String
+    , content : List String
+    , choices : List ( String, String )
     }
 
 emptyPageContent : PageContent

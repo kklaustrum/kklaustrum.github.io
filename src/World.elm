@@ -3,7 +3,7 @@ module World exposing
     , initWorld, addVisitIfNew
     , visitCount, visitPath
     , startPage, safePages
-    , isGameOverCandidate, setPendingItem
+    , isGameOverCandidate
     )
 
 import Dict exposing (Dict)
@@ -20,7 +20,6 @@ type alias WorldState =
     { visited : Set String
     , visitCounts : Dict String Int
     , visitHistory : List String
-    , pendingItem  : Maybe String
     }
 
 initWorld : WorldState
@@ -28,12 +27,7 @@ initWorld =
     { visited = Set.empty
     , visitCounts = Dict.empty
     , visitHistory = []
-    , pendingItem  = Nothing
     }
-
-setPendingItem : Maybe String -> WorldState -> WorldState
-setPendingItem pending world =
-    { world | pendingItem = pending }
 
 addVisit : String -> WorldState -> WorldState
 addVisit pageId world =

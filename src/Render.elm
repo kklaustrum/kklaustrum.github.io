@@ -7,13 +7,11 @@ module Render exposing
 import Html exposing (Html)
 import Messages exposing (Msg(..))
 import Locale exposing (Locale)
-import World exposing (WorldState)
 import UiClasses exposing (..)
 import Components exposing (..)
 import Utils exposing (Config, debugData, formatItemPickup, listWhen)
-import Types exposing (PageContent, ExtraChoices, UIContext, GameContext, InventoryContext, EquippedItems(..), StashItems(..))
+import Types exposing (Page, PageContent, ExtraChoices, UIContext, GameContext, CharacterContext, EquippedItems(..), StashItems(..))
 import Display exposing (itemEffectHint, itemName)
-import Veil exposing (Page)
 
 type alias HtmlList = List (Html Msg)
 
@@ -35,7 +33,7 @@ toStashItem : Locale -> String -> (String, String, Msg)
 toStashItem locale id =
     (id, Display.itemEffectHint locale id, Messages.moveToEquipped id)
 
-pageLayout : UIContext -> GameContext -> InventoryContext -> PageLayout -> HtmlList
+pageLayout : UIContext -> GameContext -> CharacterContext -> PageLayout -> HtmlList
 pageLayout ui game inventory content =
     let
         debugInfo = debugData game.world game.currentPage
@@ -89,7 +87,7 @@ renderGameOver ui =
     , actionButton ui.locale.backToHomeLabel ReturnToStart
     ]
 
-renderPassagePage : UIContext -> GameContext -> InventoryContext -> PageContent -> HtmlList
+renderPassagePage : UIContext -> GameContext -> CharacterContext -> PageContent -> HtmlList
 renderPassagePage ui game inventory pc =
     pageLayout ui game inventory
         { title   = titleHtml pc.title
@@ -97,7 +95,7 @@ renderPassagePage ui game inventory pc =
         , choices = pc.choices
         }
 
-renderNormalPage : UIContext -> GameContext -> InventoryContext -> Page -> ExtraChoices -> HtmlList
+renderNormalPage : UIContext -> GameContext -> CharacterContext -> Page -> ExtraChoices -> HtmlList
 renderNormalPage ui game inventory page extraChoices =
     pageLayout ui game inventory
         { title   = titleHtml page.title

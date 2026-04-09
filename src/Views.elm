@@ -1,21 +1,19 @@
 module Views exposing (viewPage)
 
 import Html exposing (Html)
-import Utils exposing (Config)
-import Locale exposing (Locale)
-import World exposing (WorldState)
 import Character exposing (Character)
 import Veil exposing (Book)
 import Messages exposing (Msg(..))
 import Render exposing (..)
 import Rules exposing (standardRules, evaluate)
-import Types exposing (PageMode(..), UIContext, GameContext, InventoryContext)
+import Types exposing (PageMode(..), UIContext, GameContext, CharacterContext)
 
-toInventoryContext : Character -> InventoryContext
-toInventoryContext char =
+toCharacterContext : Character -> CharacterContext
+toCharacterContext char =
     { stash    = char.stash
     , equipped = char.equipped
     , params   = char.params
+    , traits   = char.traits
     }
 
 -- PageMode routing: NormalPage always has a book entry and merges extra
@@ -27,7 +25,7 @@ viewPage : UIContext -> GameContext -> Character -> Html Msg
 viewPage ui game char =
     let
         pageResult = evaluate (standardRules ui.locale) game.world char game.currentPage
-        inventory  = toInventoryContext char
+        inventory  = toCharacterContext char
 
         content =
             case pageResult of
