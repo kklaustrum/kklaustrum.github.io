@@ -17,6 +17,8 @@ type Msg
     | GoToPage String
     | ReturnToStart
     | ItemAction ItemMsg
+    | OpenCharacterScreen
+    | CloseCharacterScreen
 
 goToPage : String -> Msg
 goToPage = GoToPage

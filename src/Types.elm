@@ -6,7 +6,8 @@ module Types exposing
     , LocaleString
     , LocaleChoices
     , UIContext, GameContext, CharacterContext
-    , EquippedItems(..), StashItems(..)
+    , ItemAction, EquippedItems(..), StashItems(..)
+    , ScreenMode(..)
     )
 
 import Dict exposing (Dict)
@@ -21,6 +22,7 @@ import Traits exposing (Trait(..))
 type alias UIContext =
     { config : Config
     , locale : Locale
+    , screen : ScreenMode
     }
 
 type alias GameContext =
@@ -70,5 +72,15 @@ type alias Rule =
     , evaluate : WorldState -> Character -> String -> Maybe PageMode
     }
 
-type EquippedItems = EquippedItems (List (String, String, Msg))
-type StashItems = StashItems (List (String, String, Msg))
+type alias ItemAction =
+    { id     : String
+    , hint   : String
+    , action : Msg
+    }
+
+type EquippedItems = EquippedItems (List ItemAction)
+type StashItems = StashItems (List ItemAction)
+
+type ScreenMode
+    = GameScreen
+    | CharacterScreen

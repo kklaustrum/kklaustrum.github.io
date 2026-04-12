@@ -13,7 +13,7 @@ import Utils exposing (defaultConfig, bookUrl)
 import World exposing (WorldState, initWorld, startPage)
 import Character exposing (Character, initCharacter)
 import Engine exposing (VisitResult, applyPageVisit)
-import Types exposing (UIContext, GameContext)
+import Types exposing (UIContext, GameContext, ScreenMode(..))
 
 -- ------------------------------------------------------------------
 -- Model
@@ -24,6 +24,7 @@ type alias ReadyData =
     , storyline   : Book
     , world       : WorldState
     , character   : Character
+    , screen      : ScreenMode
     }
 
 type Model
@@ -48,12 +49,14 @@ initReady locale book =
     , storyline   = book
     , world       = World.initWorld
     , character   = Character.initCharacter
+    , screen      = GameScreen
     }
 
 toUIContext : ReadyData -> UIContext
 toUIContext data =
     { config = defaultConfig
     , locale = data.locale
+    , screen = data.screen
     }
 
 toGameContext : ReadyData -> GameContext
@@ -109,6 +112,12 @@ update msg model =
             updateReady (\data ->
                 { data | character = Engine.applyItemMsg itemMsg data.character }
             ) model
+
+        OpenCharacterScreen ->
+            updateReady (\data -> { data | screen = CharacterScreen }) model
+
+        CloseCharacterScreen ->
+            updateReady (\data -> { data | screen = GameScreen }) model
 
 -- ------------------------------------------------------------------
 -- View

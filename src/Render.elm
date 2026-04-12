@@ -1,18 +1,19 @@
 module Render exposing
     ( renderItemPickup, renderPageNotFound, renderGameOver, renderPassagePage,renderNormalPage
-    , pageLayout
-    , pageContainer
+    , renderCharacterScreen
+    , pageLayout, pageContainer
     )
 
 import Html exposing (Html)
-import Messages exposing (Msg(..))
+import Messages exposing (Msg(..), moveToStash, moveToEquipped)
 import Locale exposing (Locale)
 import UiClasses exposing (..)
 import Components exposing (..)
 import Utils exposing (Config, debugData, formatItemPickup, listWhen)
-import Types exposing (Page, PageContent, ExtraChoices, UIContext, GameContext, CharacterContext, EquippedItems(..), StashItems(..))
+import Types exposing (Page, PageContent, ExtraChoices, UIContext, GameContext, CharacterContext, ItemAction, EquippedItems(..), StashItems(..))
 import Display exposing (itemEffectHint, itemName)
 
+-- HtmlList and PageLayout stay here: moving them to Types would pollute a data-only module with Html/Msg dependencies.
 type alias HtmlList = List (Html Msg)
 
 type alias PageLayout =
@@ -25,13 +26,19 @@ pageContainer : HtmlList -> Html Msg
 pageContainer content =
     Components.novelContainer content
 
-toEquippedItem : Locale -> String -> (String, String, Msg)
+toEquippedItem : Locale -> String -> ItemAction
 toEquippedItem locale id =
-    (id, Display.itemEffectHint locale id, Messages.moveToStash id)
+    { id     = id
+    , hint   = Display.itemEffectHint locale id
+    , action = Messages.moveToStash id
+    }
 
-toStashItem : Locale -> String -> (String, String, Msg)
+toStashItem : Locale -> String -> ItemAction
 toStashItem locale id =
-    (id, Display.itemEffectHint locale id, Messages.moveToEquipped id)
+    { id     = id
+    , hint   = Display.itemEffectHint locale id
+    , action = Messages.moveToEquipped id
+    }
 
 pageLayout : UIContext -> GameContext -> CharacterContext -> PageLayout -> HtmlList
 pageLayout ui game inventory content =
@@ -52,12 +59,14 @@ pageLayout ui game inventory content =
                 |> StashItems
     in
     List.concat
-        [ [ content.title ]
+        [ [ characterScreenButton ]
+        , [ content.title ]
         , content.content
         , [ statsLayout
             (paramsSection locale params)
             (inventorySection locale equippedItems stashItems)
-            (currentPageSection showDebugInfo locale debugInfo.currentPage debugInfo.visits)
+            (currentPageSection showDebugInfo locale debugInfo.currentPage)
+            (currentVisitsSection showDebugInfo locale debugInfo.visits)
             (pathSection showDebugInfo locale debugInfo.path)
         ]
         , nonEmptyChoices content.choices
@@ -102,3 +111,7 @@ renderNormalPage ui game inventory page extraChoices =
         , content = contentHtml page.content
         , choices = page.choices ++ extraChoices
         }
+
+renderCharacterScreen : UIContext -> HtmlList
+renderCharacterScreen ui =
+    [ actionButton ui.locale.backToHomeLabel CloseCharacterScreen ]

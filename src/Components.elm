@@ -1,5 +1,5 @@
 module Components exposing
-    ( novelContainer
+    ( novelContainer, characterScreenButton
     , statsGrid, statsLayout
     , actionButton, choiceButton
     , viewChoices
@@ -9,7 +9,7 @@ module Components exposing
     , viewLoading
     , viewError
     , paramsSection, inventorySection
-    , currentPageSection, pathSection
+    , currentPageSection, currentVisitsSection, pathSection
     , gameOverSection
     , paragraphNode
     , errorTitleNode  
@@ -26,9 +26,10 @@ import Html.Events exposing (onClick)
 
 import Locale exposing (Locale)
 import UiClasses exposing (..)
-import Utils exposing (formatParamsData, formatParamLabel, formatParamValue, formatInventoryData, formatEquippedData, formatStashData, joinList, listWhen)
+import Utils exposing (formatParamsData, formatInventoryData, formatEquippedData, formatStashData, joinList, listWhen)
 import Messages exposing (Msg(..), stashItem, equipItem)
-import Types exposing (EquippedItems(..), StashItems(..))
+import Types exposing (ItemAction, EquippedItems(..), StashItems(..), ScreenMode(..))
+import Display exposing (formatParamLabel, formatParamValue)
 
 -- -----------------------------------------------------------------
 -- Low-level helpers
@@ -59,29 +60,38 @@ infoSection header rows =
 -- -----------------------------------------------------------------
 -- UI components
 -- -----------------------------------------------------------------
-toggleBadge : String -> String -> String -> Msg -> Html Msg
-toggleBadge arrow hint label msg =
+toggleBadge : String -> ItemAction -> Html Msg
+toggleBadge arrow item =
     span [ class toggleBadgeCls ]
-        [ span [] [ text label ]
+        [ span [] [ text item.id ]
         , span
-            [ onClick msg
-            , Html.Attributes.title (arrow ++ " " ++ hint)
+            [ onClick item.action
+            , Html.Attributes.title (arrow ++ " " ++ item.hint)
             , class itemArrowCls
             ]
             [ text arrow ]
         ]
 
-toggleRow : String -> String -> List ( String, String, Msg ) -> Html Msg
+toggleRow : String -> String -> List ItemAction -> Html Msg
 toggleRow rowTag arrow items =
     div [ class inventoryRowCls ]
         [ labeledSpan rowTagCls rowTag
         , span [ class toggleRowCls ]
-            (List.map (\( label, hint, msg ) -> toggleBadge arrow hint label msg) items)
+            (List.map (toggleBadge arrow) items)
         ]
 
 novelContainer : List (Html msg) -> Html msg
 novelContainer children =
     div [ class novelContainerCls ] children
+
+characterScreenButton : Html Msg
+characterScreenButton =
+    button
+        [ class cornerButtonCls
+        , onClick OpenCharacterScreen
+        , Html.Attributes.title "Character"
+        ]
+        [ text "∴" ]
 
 statsGrid : List (Html msg) -> List (Html msg) -> Html msg
 statsGrid left right =
@@ -90,13 +100,14 @@ statsGrid left right =
         , div [] right
         ]
 
-statsLayout : List (Html msg) -> List (Html msg) -> List (Html msg) -> List (Html msg) -> Html msg
-statsLayout topLeft topRight bottomLeft bottomRight =
+statsLayout : List (Html msg) -> List (Html msg) -> List (Html msg) -> List (Html msg) -> List (Html msg) -> Html msg
+statsLayout topLeft topRight bottomLeft bottomRight footer =
     div [ class statsGridCls ]
         [ div [] topLeft
         , div [] topRight
         , div [] bottomLeft
         , div [] bottomRight
+        , div [ class fullWidthCellCls ] footer
         ]
 
 actionButton : String -> Msg -> Html Msg
@@ -121,7 +132,7 @@ viewLoading locale =
     novelContainer
         [ h1 [ class (loadingTitleCls ++ " " ++ pulseAnimationCls) ] [ text locale.loading ] ]
 
-viewError : Locale -> String -> Html msg
+viewError : Locale -> String -> Html Msg
 viewError locale errMsg =
     novelContainer
         [ h1 [ class errorTitleCls ] [ text locale.errorTitle ]
@@ -136,13 +147,17 @@ contentHtml : List String -> List (Html Msg)
 contentHtml paragraphs = 
     List.map paragraphNode paragraphs
 
-currentPageSection : Bool -> Locale -> String -> Int -> List (Html msg)
-currentPageSection showDebug locale currentPage visits =
+currentPageSection : Bool -> Locale -> String -> List (Html msg)
+currentPageSection showDebug locale currentPage =
     listWhen showDebug <|
         infoSection []
-            [ infoRow locale.debugCurrentPagePrefix currentPage
-            , infoRow locale.debugCurrentPageVisits (String.fromInt visits)
-            ]
+            [ infoRow locale.debugCurrentPagePrefix currentPage ]
+
+currentVisitsSection : Bool -> Locale -> Int -> List (Html msg)
+currentVisitsSection showDebug locale visits =
+    listWhen showDebug <|
+        infoSection []
+            [ infoRow locale.debugCurrentPageVisits (String.fromInt visits) ]
 
 pathSection : Bool -> Locale -> List String -> List (Html msg)
 pathSection showDebug locale path =

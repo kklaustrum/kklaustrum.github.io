@@ -6,7 +6,7 @@ import Veil exposing (Book)
 import Messages exposing (Msg(..))
 import Render exposing (..)
 import Rules exposing (standardRules, evaluate)
-import Types exposing (PageMode(..), UIContext, GameContext, CharacterContext)
+import Types exposing (PageMode(..), UIContext, GameContext, CharacterContext, ScreenMode(..))
 
 toCharacterContext : Character -> CharacterContext
 toCharacterContext char =
@@ -23,27 +23,32 @@ toCharacterContext char =
 -- collectPassages falls back to autoBack when no outgoing passages exist.
 viewPage : UIContext -> GameContext -> Character -> Html Msg
 viewPage ui game char =
-    let
-        pageResult = evaluate (standardRules ui.locale) game.world char game.currentPage
-        inventory  = toCharacterContext char
+    case ui.screen of
+        GameScreen      ->
+            let
+                pageResult = evaluate (standardRules ui.locale) game.world char game.currentPage
+                inventory  = toCharacterContext char
 
-        content =
-            case pageResult of
-                NormalPage extraChoices ->
-                    case Veil.getPage game.currentPage game.book of
-                        Just page -> renderNormalPage ui game inventory page extraChoices
-                        Nothing   -> renderPageNotFound ui game
+                content =
+                    case pageResult of
+                        NormalPage extraChoices ->
+                            case Veil.getPage game.currentPage game.book of
+                                Just page -> renderNormalPage ui game inventory page extraChoices
+                                Nothing   -> renderPageNotFound ui game
 
-                PassagePage pageContent ->
-                    renderPassagePage ui game inventory pageContent
+                        PassagePage pageContent ->
+                            renderPassagePage ui game inventory pageContent
 
-                GameOverPage ->
-                    renderGameOver ui
+                        GameOverPage ->
+                            renderGameOver ui
 
-                ItemPickup itemName ->
-                    renderItemPickup ui itemName
+                        ItemPickup itemName ->
+                            renderItemPickup ui itemName
 
-                PageNotFound _ ->
-                    renderPageNotFound ui game
-    in
-    pageContainer content
+                        PageNotFound _ ->
+                            renderPageNotFound ui game
+            in
+            pageContainer content
+
+        CharacterScreen ->
+            pageContainer (renderCharacterScreen ui)

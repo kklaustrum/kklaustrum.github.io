@@ -1,5 +1,5 @@
 module UiClasses exposing
-    ( novelContainerCls
+    ( novelContainerCls, cornerButtonCls
     , pageTitleCls
     , paragraphCls
     , rowTagCls, statsGridCls
@@ -17,7 +17,7 @@ module UiClasses exposing
     , buttonActiveCls
     , fadeInAnimationCls
     , pulseAnimationCls
-    , inventoryRowCls, infoSectionCls, infoRowsGridCls, sectionHeaderCls, breakWordsCls
+    , inventoryRowCls, infoSectionCls, infoRowsGridCls, fullWidthCellCls, sectionHeaderCls, breakWordsCls
     , gameOverCls
     , debugDividerCls
     , centeredChoiceCls
@@ -43,7 +43,11 @@ rootDivCls =
 -- ------------------------------------------------------------------
 novelContainerCls : CssClass
 novelContainerCls =
-    "w-full max-w-2xl mx-auto bg-gritty-50 rounded-lg shadow-gritty px-1 md:px-4 py-6"
+    "relative w-full max-w-2xl mx-auto bg-gritty-50 rounded-lg shadow-gritty px-1 md:px-4 py-6"
+
+cornerButtonCls : CssClass
+cornerButtonCls =
+    "absolute top-3 right-3 text-gritty-400 hover:text-gritty-700 transition-colors cursor-pointer text-2xl leading-none"
 
 -- ------------------------------------------------------------------
 -- Текстовые элементы
@@ -87,6 +91,10 @@ infoSectionCls =
 infoRowsGridCls : CssClass
 infoRowsGridCls =
     "grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1 mt-1 items-baseline"
+
+fullWidthCellCls : CssClass
+fullWidthCellCls =
+    "col-span-2"
 
 sectionHeaderCls : CssClass
 sectionHeaderCls =
