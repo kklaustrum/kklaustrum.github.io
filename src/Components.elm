@@ -1,5 +1,5 @@
 module Components exposing
-    ( novelContainer, characterScreenButton
+    ( novelContainer, pageHeader, characterScreenButton
     , statsGrid, statsLayout
     , actionButton, choiceButton
     , viewChoices
@@ -84,10 +84,15 @@ novelContainer : List (Html msg) -> Html msg
 novelContainer children =
     div [ class novelContainerCls ] children
 
+pageHeader : Html Msg
+pageHeader =
+    div [ class pageHeaderCls ]
+        [ characterScreenButton ]
+
 characterScreenButton : Html Msg
 characterScreenButton =
     button
-        [ class cornerButtonCls
+        [ class glyphButtonCls
         , onClick OpenCharacterScreen
         , Html.Attributes.title "Character"
         ]

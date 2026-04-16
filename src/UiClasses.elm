@@ -1,5 +1,5 @@
 module UiClasses exposing
-    ( novelContainerCls, cornerButtonCls
+    ( novelContainerCls, pageHeaderCls, glyphButtonCls
     , pageTitleCls
     , paragraphCls
     , rowTagCls, statsGridCls
@@ -43,11 +43,14 @@ rootDivCls =
 -- ------------------------------------------------------------------
 novelContainerCls : CssClass
 novelContainerCls =
-    "relative w-full max-w-2xl mx-auto bg-gritty-50 rounded-lg shadow-gritty px-1 md:px-4 py-6"
+    "relative w-full max-w-2xl mx-auto bg-gritty-50 rounded-lg shadow-gritty px-1 md:px-4 pt-2 pb-6"
 
-cornerButtonCls : CssClass
-cornerButtonCls =
-    "absolute top-3 right-3 text-gritty-400 hover:text-gritty-700 transition-colors cursor-pointer text-2xl leading-none"
+pageHeaderCls =
+    "flex items-center justify-center w-1/2 mx-auto bg-gritty-200/50 rounded-tl-2xl rounded-tr-md rounded-bl-md rounded-br-2xl px-4 py-1 border-b border-gritty-200 leading-none"
+
+glyphButtonCls : CssClass
+glyphButtonCls =
+    "text-gritty-600 hover:text-accent transition-colors cursor-pointer text-2xl shrink-0 rounded hover:bg-gritty-100 leading-none"
 
 -- ------------------------------------------------------------------
 -- Текстовые элементы

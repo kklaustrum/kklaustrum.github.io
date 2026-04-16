@@ -5,7 +5,7 @@ import Html exposing (Html)
 
 import Views exposing (viewPage)
 import Components exposing (viewLoading, viewError)
-import Messages exposing (Msg(..))
+import Messages exposing (Msg(..), ItemMsg(..))
 import Locale exposing (Locale)
 import HttpError exposing (ResourceError(..), resourceErrorToString)
 import Veil exposing (loadContent, Page, Book, storyline)
@@ -72,9 +72,16 @@ updateReady f model =
         Ready data -> ( Ready (f data), Cmd.none )
         _ -> ( model, Cmd.none )
 
-applyVisitResult : VisitResult -> String -> ReadyData -> ReadyData
-applyVisitResult result pageId data =
-    { data | currentPage = pageId, world = result.world, character = result.character }
+applyVisitResult : String -> ReadyData -> ReadyData
+applyVisitResult pageId data =
+    let
+        visitResult = Engine.applyPageVisit pageId data.currentPage data.world data.character
+    in
+    { data | currentPage = pageId, world = visitResult.world, character = visitResult.character }
+
+applyItemAction : ItemMsg -> ReadyData -> ReadyData
+applyItemAction itemMsg data =
+    { data | character = Engine.applyItemMsg itemMsg data.character }
 
 -- ------------------------------------------------------------------
 -- Init
@@ -101,17 +108,13 @@ update msg model =
             ( Error defaultConfig.defaultLocale (resourceErrorToString (currentLocale model) err), Cmd.none )
 
         GoToPage pageId ->
-            updateReady (\data ->
-                applyVisitResult (Engine.applyPageVisit pageId data.currentPage data.world data.character) pageId data
-            ) model
+            updateReady (applyVisitResult pageId) model
 
         ReturnToStart ->
             updateReady (\data -> { data | currentPage = World.startPage, world = World.initWorld }) model
 
         ItemAction itemMsg ->
-            updateReady (\data ->
-                { data | character = Engine.applyItemMsg itemMsg data.character }
-            ) model
+            updateReady (applyItemAction itemMsg) model
 
         OpenCharacterScreen ->
             updateReady (\data -> { data | screen = CharacterScreen }) model

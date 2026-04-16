@@ -59,7 +59,7 @@ pageLayout ui game inventory content =
                 |> StashItems
     in
     List.concat
-        [ [ characterScreenButton ]
+        [ [ pageHeader ]
         , [ content.title ]
         , content.content
         , [ statsLayout
