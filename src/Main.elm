@@ -10,14 +10,17 @@ import Locale exposing (Locale)
 import HttpError exposing (ResourceError(..), resourceErrorToString)
 import Veil exposing (loadContent, Page, Book, storyline)
 import Utils exposing (defaultConfig, bookUrl)
-import World exposing (WorldState, initWorld, startPage)
-import Character exposing (Character, initCharacter)
-import Engine exposing (VisitResult, applyPageVisit)
-import Types exposing (UIContext, GameContext, ScreenMode(..))
+import World exposing (initWorld, startPage)
+import Character exposing (initCharacter)
+import Engine exposing (applyPageVisit)
+import Types exposing (Character, WorldState, UIContext, GameContext, ScreenMode(..))
 
 -- ------------------------------------------------------------------
 -- Model
 -- ------------------------------------------------------------------
+-- ReadyData is intentionally kept here rather than in Types, because it represents
+-- application state (the Ready branch of Model), not domain logic.
+-- UIContext and GameContext are domain concepts; ReadyData is a Browser.element concern.
 type alias ReadyData =
     { locale      : Locale
     , currentPage : String

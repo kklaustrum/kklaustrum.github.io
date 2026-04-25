@@ -9,7 +9,7 @@ module Components exposing
     , viewLoading
     , viewError
     , paramsSection, inventorySection
-    , currentPageSection, currentVisitsSection, pathSection
+    , currentPageSection, currentVisitsSection, pathSection, traitsSection
     , gameOverSection
     , paragraphNode
     , errorTitleNode  
@@ -30,6 +30,7 @@ import Utils exposing (formatParamsData, formatInventoryData, formatEquippedData
 import Messages exposing (Msg(..), stashItem, equipItem)
 import Types exposing (ItemAction, EquippedItems(..), StashItems(..), ScreenMode(..))
 import Display exposing (formatParamLabel, formatParamValue)
+import Traits exposing (Trait, traitToString)
 
 -- -----------------------------------------------------------------
 -- Low-level helpers
@@ -60,6 +61,12 @@ infoSection header rows =
 -- -----------------------------------------------------------------
 -- UI components
 -- -----------------------------------------------------------------
+traitsSection : Locale -> List Trait -> List (Html msg)
+traitsSection locale traits =
+    [ infoSection []
+        [ infoRow locale.traits (Utils.joinList (List.map traitToString traits)) ]
+    ]
+
 toggleBadge : String -> ItemAction -> Html Msg
 toggleBadge arrow item =
     span [ class toggleBadgeCls ]

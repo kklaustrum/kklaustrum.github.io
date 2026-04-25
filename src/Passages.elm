@@ -1,9 +1,8 @@
-module Passages exposing (passageRule)
+module Passages exposing (passageRule, traitsForPage)
 
 import Dict
 import Utils exposing (maybeWhen, itemAt)
-import Types exposing (Rule, PageMode(..), PageContent, ExtraChoices, LocaleString, emptyPageContent)
-import Character exposing (Character)
+import Types exposing (Character, Rule, PageMode(..), PageContent, ExtraChoices, LocaleString)
 import Locale exposing (Locale)
 import Conditions exposing (Condition(..), evaluate)
 import Params exposing (Param(..))
@@ -31,6 +30,16 @@ type alias Route =
     , nextLabel : LocaleString
     , backLabel : LocaleString
     }
+
+traitsForPage : String -> List Trait
+traitsForPage pageId =
+    passages Locale.is
+        |> List.filter (\p -> p.toPage == pageId)
+        |> List.filterMap .grantTrait
+
+emptyPageContent : PageContent
+emptyPageContent =
+    { title = "", content = "", choices = [] }
 
 dungeonRoute : Route
 dungeonRoute =
@@ -80,12 +89,12 @@ withCondition cond p =
 
 withTitle : String -> Passage -> Passage
 withTitle title p =
-    let secret = Maybe.withDefault Types.emptyPageContent p.secret
+    let secret = Maybe.withDefault emptyPageContent p.secret
     in { p | secret = Just { secret | title = title } }
 
 withBody : String -> Passage -> Passage
 withBody body p =
-    let secret = Maybe.withDefault Types.emptyPageContent p.secret
+    let secret = Maybe.withDefault emptyPageContent p.secret
     in { p | secret = Just { secret | content = body } }
 
 withTrait : Trait -> Passage -> Passage

@@ -8,13 +8,10 @@ module Utils exposing
     , formatInventoryData, formatEquippedData, formatStashData
     , formatParamsData
     , formatItemPickup
-    , debugData, joinList
+    , joinList
     , maybeWhen, listWhen, itemAt
     )
 
-import World exposing (WorldState, visitCount, visitPath)
-import Dict exposing (Dict)
-import Set exposing (Set)
 import Locale exposing (Locale, is, en)
 import String exposing (fromInt)
 import Params exposing (stringToParam, getParamLabel)
@@ -88,13 +85,6 @@ isBookUrl url cfg =
 formatVisitPath : Locale -> List String -> String
 formatVisitPath locale path =
     formatListWithBrackets stringHelpers locale.debugPathLabel path
-
-debugData : WorldState -> String -> { currentPage : String, visits : Int, path : List String }
-debugData world currentPage =
-    { currentPage = currentPage
-    , visits = World.visitCount currentPage world
-    , path = World.visitPath world
-    }
 
 joinList : List String -> String
 joinList items =

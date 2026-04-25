@@ -1,20 +1,11 @@
 module Views exposing (viewPage)
 
 import Html exposing (Html)
-import Character exposing (Character)
 import Veil exposing (Book)
 import Messages exposing (Msg(..))
 import Render exposing (..)
 import Rules exposing (standardRules, evaluate)
-import Types exposing (PageMode(..), UIContext, GameContext, CharacterContext, ScreenMode(..))
-
-toCharacterContext : Character -> CharacterContext
-toCharacterContext char =
-    { stash    = char.stash
-    , equipped = char.equipped
-    , params   = char.params
-    , traits   = char.traits
-    }
+import Types exposing (Character, PageMode(..), UIContext, GameContext, ScreenMode(..))
 
 -- PageMode routing: NormalPage always has a book entry and merges extra
 -- choices from passages. PassagePage is for code-only pages with non-empty
@@ -27,7 +18,7 @@ viewPage ui game char =
         GameScreen      ->
             let
                 pageResult = evaluate (standardRules ui.locale) game.world char game.currentPage
-                inventory  = toCharacterContext char
+                inventory  = char
 
                 content =
                     case pageResult of
@@ -51,4 +42,4 @@ viewPage ui game char =
             pageContainer content
 
         CharacterScreen ->
-            pageContainer (renderCharacterScreen ui)
+            pageContainer (renderCharacterScreen ui char)

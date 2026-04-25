@@ -1,6 +1,5 @@
 module Character exposing
-    ( Character
-    , initCharacter
+    ( initCharacter
     , addToStash, moveToStash, moveToEquipped
     , equipItem
     , applyEffects, removeEffects
@@ -16,14 +15,7 @@ module Character exposing
 import Dict exposing (Dict)
 import Params exposing (Param(..), paramToString, defaultValues)
 import Traits exposing (Trait(..), defaultTraits)
-
-type alias Character =
-    { stash    : List String
-    , equipped : List String
-    , prevAll  : List String
-    , params   : Dict String Int
-    , traits   : List Trait
-    }
+import Types exposing (Character)
 
 initParams : Dict String Int
 initParams =

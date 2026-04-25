@@ -4,13 +4,14 @@ module Render exposing
     , pageLayout, pageContainer
     )
 
+import Dict
 import Html exposing (Html)
 import Messages exposing (Msg(..), moveToStash, moveToEquipped)
 import Locale exposing (Locale)
 import UiClasses exposing (..)
 import Components exposing (..)
-import Utils exposing (Config, debugData, formatItemPickup, listWhen)
-import Types exposing (Page, PageContent, ExtraChoices, UIContext, GameContext, CharacterContext, ItemAction, EquippedItems(..), StashItems(..))
+import Utils exposing (Config, formatItemPickup, listWhen)
+import Types exposing (Page, PageContent, ExtraChoices, UIContext, GameContext, Character, ItemAction, EquippedItems(..), StashItems(..), DebugInfo)
 import Display exposing (itemEffectHint, itemName)
 
 -- HtmlList and PageLayout stay here: moving them to Types would pollute a data-only module with Html/Msg dependencies.
@@ -20,6 +21,13 @@ type alias PageLayout =
     { title : Html Msg
     , content : HtmlList
     , choices : List (String, String)
+    }
+
+debugData : GameContext -> DebugInfo
+debugData game =
+    { currentPage = game.currentPage
+    , visits      = Dict.get game.currentPage game.world.visitCounts |> Maybe.withDefault 0
+    , path        = List.reverse game.world.visitHistory
     }
 
 pageContainer : HtmlList -> Html Msg
@@ -40,10 +48,10 @@ toStashItem locale id =
     , action = Messages.moveToEquipped id
     }
 
-pageLayout : UIContext -> GameContext -> CharacterContext -> PageLayout -> HtmlList
+pageLayout : UIContext -> GameContext -> Character -> PageLayout -> HtmlList
 pageLayout ui game inventory content =
     let
-        debugInfo = debugData game.world game.currentPage
+        debugInfo = debugData game
         { locale, config } = ui
         { stash, equipped, params } = inventory
         { showDebugInfo } = config
@@ -96,7 +104,7 @@ renderGameOver ui =
     , actionButton ui.locale.backToHomeLabel ReturnToStart
     ]
 
-renderPassagePage : UIContext -> GameContext -> CharacterContext -> PageContent -> HtmlList
+renderPassagePage : UIContext -> GameContext -> Character -> PageContent -> HtmlList
 renderPassagePage ui game inventory pc =
     pageLayout ui game inventory
         { title   = titleHtml pc.title
@@ -104,7 +112,7 @@ renderPassagePage ui game inventory pc =
         , choices = pc.choices
         }
 
-renderNormalPage : UIContext -> GameContext -> CharacterContext -> Page -> ExtraChoices -> HtmlList
+renderNormalPage : UIContext -> GameContext -> Character -> Page -> ExtraChoices -> HtmlList
 renderNormalPage ui game inventory page extraChoices =
     pageLayout ui game inventory
         { title   = titleHtml page.title
@@ -112,6 +120,7 @@ renderNormalPage ui game inventory page extraChoices =
         , choices = page.choices ++ extraChoices
         }
 
-renderCharacterScreen : UIContext -> HtmlList
-renderCharacterScreen ui =
-    [ actionButton ui.locale.backToHomeLabel CloseCharacterScreen ]
+renderCharacterScreen : UIContext -> Character -> HtmlList
+renderCharacterScreen ui char =
+    traitsSection ui.locale char.traits
+    ++ [ actionButton ui.locale.backToHomeLabel CloseCharacterScreen ]

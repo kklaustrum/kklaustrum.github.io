@@ -1,8 +1,9 @@
 module Conditions exposing (Condition(..), evaluate)
 
 import Params exposing (Param(..), paramToString)
-import Character exposing (Character, hasAtLeastItems, hasItem, hasParam)
+import Character exposing (hasAtLeastItems, hasItem, hasParam)
 import Traits exposing (Trait)
+import Types exposing (Character)
 
 type Condition
     = Always

@@ -3,12 +3,12 @@ module Rules exposing
     , evaluate
     )
 
-import World exposing (WorldState)
-import Character exposing (Character, hasPickedUp)
+import World exposing (isGameOverCandidate)
+import Character exposing (hasPickedUp)
 import Items exposing (getItemFromPage)
 import Locale exposing (Locale)
 import Passages exposing (passageRule)
-import Types exposing (Rule, PageMode(..))
+import Types exposing (Character, WorldState, Rule, PageMode(..))
 import Utils exposing (maybeWhen)
 
 gameOverRule : Int -> Rule

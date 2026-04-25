@@ -1,11 +1,12 @@
 module Engine exposing (VisitResult, applyPageVisit, applyStashChoice, applyEquipChoice, applyMoveToStash, applyMoveToEquipped, applyItemMsg)
 
-import Dict exposing (Dict)
-import World exposing (WorldState)
-import Character exposing (Character)
+import World exposing (addVisitIfNew)
+import Character exposing (moveToEquipped, moveToStash, addToStash, removeEffects, equipItem, updatePrevInventory)
 import Items
 import Utils exposing (maybeWhen)
 import Messages exposing (ItemMsg(..))
+import Types exposing (Character, WorldState)
+import Passages exposing (traitsForPage)
 
 type alias VisitResult =
     { world : WorldState
@@ -39,7 +40,9 @@ pendingItemOnPage pageId character =
 applyPageVisit : String -> String -> WorldState -> Character -> VisitResult
 applyPageVisit pageId currentPage world character =
     { world     = World.addVisitIfNew pageId world currentPage
-    , character = Character.updatePrevInventory character
+    , character = character
+        |> Character.updatePrevInventory
+        |> (\c -> List.foldl Character.addTrait c (Passages.traitsForPage pageId))
     }
 
 applyStashChoice : String -> Character -> Character

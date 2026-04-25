@@ -1,6 +1,5 @@
 module World exposing
-    ( WorldState
-    , initWorld, addVisitIfNew
+    ( initWorld, addVisitIfNew
     , visitCount, visitPath
     , startPage, safePages
     , isGameOverCandidate
@@ -8,6 +7,7 @@ module World exposing
 
 import Dict exposing (Dict)
 import Set exposing (Set)
+import Types exposing (WorldState)
 
 startPage : String
 startPage = "start"
@@ -15,12 +15,6 @@ startPage = "start"
 safePages : Set String
 safePages =
     Set.fromList [ "start", "todo" ]
-
-type alias WorldState =
-    { visited : Set String
-    , visitCounts : Dict String Int
-    , visitHistory : List String
-    }
 
 initWorld : WorldState
 initWorld =

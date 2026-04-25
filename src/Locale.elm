@@ -27,6 +27,7 @@ type alias Locale =
     , someRoomTxt : String
     , equip : String
     , stash : String
+    , traits : String
     }
 
 is =
@@ -46,7 +47,7 @@ is =
     , debugPathLabel = "Stígn"
     , gameOver = "Ganga í hringi. Teldu þetta leik lokinn."
     , paramsLabel = "Gildi"
-    , inventoryLabel = "Vörubirgði"
+    , inventoryLabel = "Hlutir"
     , noItemsLabel = "Engar vörur"
     , curiosity = "Forvitni"
     , endurance = "Úthald"
@@ -56,6 +57,7 @@ is =
     , someRoomTxt = "Þú fannst leynilega herbergið! Öll þín hlutir unnu saman til að afhjúpa þessa leyndarmál."
     , equip = "Búnaður"
     , stash = "Farangur"
+    , traits = "Þættir"
     }
 
 en =
@@ -85,4 +87,5 @@ en =
     , someRoomTxt = "You found the hidden chamber! All your items worked together to reveal this secret."
     , equip = "Equip"
     , stash = "Stash"
+    , traits = "Traits"
     }
