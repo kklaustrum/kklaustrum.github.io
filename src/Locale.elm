@@ -25,6 +25,10 @@ type alias Locale =
     , itemPickedUp : String
     , someRoomHeader : String
     , someRoomTxt : String
+    , anotherRoomHeader : String
+    , anotherRoomTxt : String
+    , goingDeeperHeader : String
+    , goingDeeperTxt : String
     , equip : String
     , stash : String
     , traits : String
@@ -55,6 +59,10 @@ is =
     , itemPickedUp = "Fann hlut: %s"
     , someRoomHeader = "Búið herbergi"
     , someRoomTxt = "Þú fannst leynilega herbergið! Öll þín hlutir unnu saman til að afhjúpa þessa leyndarmál."
+    , anotherRoomHeader = "Annað leynilegt herbergi."
+    , anotherRoomTxt = "Þú fannst leyndan gang!"
+    , goingDeeperHeader = "Fara dýpar inn"
+    , goingDeeperTxt = "Eitthvað svoleiðis."
     , equip = "Búnaður"
     , stash = "Farangur"
     , traits = "Þættir"
@@ -85,6 +93,10 @@ en =
     , itemPickedUp = "Picked up item: %s"
     , someRoomHeader = "Generated Room"
     , someRoomTxt = "You found the hidden chamber! All your items worked together to reveal this secret."
+    , anotherRoomHeader = "Another Secret Room"
+    , anotherRoomTxt = "You found a hidden passage!"
+    , goingDeeperHeader = "Going deeper"
+    , goingDeeperTxt = "Sort of."
     , equip = "Equip"
     , stash = "Stash"
     , traits = "Traits"

@@ -1,53 +1,20 @@
-module Passages exposing (passageRule, traitsForPage)
+module Passages exposing (passageRule, traitsForPage, passages, routeChoices)
 
-import Dict
-import Utils exposing (maybeWhen, itemAt)
+import Structure exposing (Passage, Route, emptyPageContent)
+import Routes
+import Shards
+import Utils exposing (itemAt)
 import Types exposing (Character, Rule, PageMode(..), PageContent, ExtraChoices, LocaleString)
 import Locale exposing (Locale)
 import Conditions exposing (Condition(..), evaluate)
 import Params exposing (Param(..))
 import Traits exposing (Trait(..))
 
-type alias Passage =
-    { fromPage   : String
-    , toPage     : String
-    , label      : String
-    , condition  : Condition
-    , grantTrait : Maybe Trait
-    , secret     : Maybe PageContent
-    , route      : Maybe Route
-    }
-
-type alias PassageArgs =
-    { from  : String
-    , to    : String
-    , label : String
-    }
-
-type alias Route =
-    { id    : String
-    , pages : List String
-    , nextLabel : LocaleString
-    , backLabel : LocaleString
-    }
-
 traitsForPage : String -> List Trait
 traitsForPage pageId =
     passages Locale.is
         |> List.filter (\p -> p.toPage == pageId)
         |> List.filterMap .grantTrait
-
-emptyPageContent : PageContent
-emptyPageContent =
-    { title = "", content = "", choices = [] }
-
-dungeonRoute : Route
-dungeonRoute =
-    { id    = "dungeon"
-    , pages = [ "roguelike", "step", "dungeon" ]
-    , nextLabel = \locale -> locale.goDeeperLabel
-    , backLabel = \locale -> locale.backToHomeLabel
-    }
 
 indexOf : a -> List a -> Maybe Int
 indexOf target list =
@@ -63,88 +30,21 @@ routeChoices route fromPage locale =
         pages = route.pages
         index = indexOf fromPage pages
 
-        prev = index |> Maybe.andThen (\i -> itemAt (i - 1) pages)
-        next = index |> Maybe.andThen (\i -> itemAt (i + 1) pages)
+        prev = index |> Maybe.andThen (\i -> Utils.itemAt (i - 1) pages)
+        next = index |> Maybe.andThen (\i -> Utils.itemAt (i + 1) pages)
     in
     List.filterMap identity
         [ Maybe.map (\p -> ( route.backLabel locale, p )) prev
         , Maybe.map (\p -> ( route.nextLabel locale, p )) next
         ]
 
--- Label is ignored if a route exists. Always set for API consistency.
-passage : Locale -> PassageArgs -> Passage
-passage locale args =
-    { fromPage   = args.from
-    , toPage     = args.to
-    , label      = args.label
-    , condition  = Always
-    , grantTrait = Nothing
-    , route      = Nothing
-    , secret     = Just { emptyPageContent | choices = backTo locale args.from }
-    }
-
 withCondition : Condition -> Passage -> Passage
 withCondition cond p =
     { p | condition = cond }
 
-withTitle : String -> Passage -> Passage
-withTitle title p =
-    let secret = Maybe.withDefault emptyPageContent p.secret
-    in { p | secret = Just { secret | title = title } }
-
-withBody : String -> Passage -> Passage
-withBody body p =
-    let secret = Maybe.withDefault emptyPageContent p.secret
-    in { p | secret = Just { secret | content = body } }
-
-withTrait : Trait -> Passage -> Passage
-withTrait trait p =
-    { p | grantTrait = Just trait }
-
-withRoute : Route -> Passage -> Passage
-withRoute route p =
-    { p | route = Just route }
-
-backTo : Locale -> String -> ExtraChoices
-backTo locale page =
-    [ ( locale.backToHomeLabel, page ) ]
-
-secretEntrance : Locale -> Passage
-secretEntrance locale =
-    passage locale { from = "start", to = "secret", label = "Secret Door" }
-        |> withCondition (HasAtLeastItems 2)
-        |> withTitle locale.someRoomHeader
-        |> withBody locale.someRoomTxt
-
-offstagePassage : Locale -> Passage
-offstagePassage locale =
-    passage locale { from = "roguelike", to = "anothersecret", label = "E10" }
-        |> withCondition (HasParam Endurance 10)
-        |> withTitle "Another Secret Room"
-        |> withBody "You found a hidden passage!"
-
-deeperPassage : Locale -> Passage
-deeperPassage locale =
-    passage locale { from = "roguelike", to = "step", label = "Deeper" }
-        |> withRoute dungeonRoute
-        |> withCondition (HasParam Curiosity 6)
-        |> withTitle "Going deeper"
-        |> withBody "Sort of."
-
-dungeonPassage : Locale -> Passage
-dungeonPassage locale =
-    passage locale { from = "step", to = "dungeon", label = "С6" }
-        |> withRoute dungeonRoute
-        |> withCondition (HasParam Curiosity 6)
-        |> withTrait Foobar
-
 passages : Locale -> List Passage
 passages locale =
-    [ secretEntrance locale
-    , offstagePassage locale
-    , deeperPassage locale
-    , dungeonPassage locale
-    ]
+    Shards.all locale ++ Routes.all locale
 
 isVisiblePassage : Character -> String -> Passage -> Bool
 isVisiblePassage char page p =
