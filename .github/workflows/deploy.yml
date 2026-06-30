@@ -1,0 +1,52 @@
+# .github/workflows/deploy.yml
+name: Build and Deploy
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v25
+
+      - uses: DeterminateSystems/magic-nix-cache-action@v7
+
+      - name: Build and minify
+        run: |
+          mkdir -p dist
+          cp index.html dist/index.html
+          nix-shell -p elmPackages.elm terser --run "
+            elm make src/Main.elm --output dist/elm.js --optimize &&
+            terser dist/elm.js --compress 'pure_funcs=[F2,F3,F4,F5,F6,F7,F8,F9,A2,A3,A4,A5,A6,A7,A8,A9],pure_getters,keep_fargs=false,unsafe_comps,unsafe' --mangle --output dist/elm.min.js &&
+            mv dist/elm.min.js dist/elm.js
+          "
+
+      - uses: actions/configure-pages@v4
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'dist'
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
