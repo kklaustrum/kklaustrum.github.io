@@ -1,9 +1,9 @@
 module Utils exposing
     ( Config
     , defaultConfig
-    , bookUrl
+    , jsonUrl
     , markdownUrl
-    , isBookUrl
+    , isJsonUrl
     , formatVisitPath
     , formatInventoryData, formatEquippedData, formatStashData
     , formatParamsData
@@ -18,7 +18,7 @@ import Params exposing (stringToParam, getParamLabel)
 
 type alias Config =
     { defaultLocale : Locale
-    , bookUrl : String
+    , jsonUrl : String
     , markdownUrl : String
     , showDebugInfo : Bool
     }
@@ -26,7 +26,7 @@ type alias Config =
 defaultConfig : Config
 defaultConfig =
     { defaultLocale = is
-    , bookUrl = "/res/book.json"
+    , jsonUrl = "/res/book.json"
     , markdownUrl = "/res/book.md"
     , showDebugInfo = True
     }
@@ -70,17 +70,17 @@ replaceLocalePlaceholder : StringHelpers -> String -> String -> String
 replaceLocalePlaceholder helpers template replacement =
     String.replace helpers.placeholder replacement template
 
-bookUrl : Config -> String
-bookUrl cfg =
-    cfg.bookUrl
+jsonUrl : Config -> String
+jsonUrl cfg =
+    cfg.jsonUrl
 
 markdownUrl : Config -> String
 markdownUrl cfg =
     cfg.markdownUrl
 
-isBookUrl : String -> Config -> Bool
-isBookUrl url cfg =
-    url == cfg.bookUrl
+isJsonUrl : String -> Config -> Bool
+isJsonUrl url cfg =
+    url == cfg.jsonUrl
 
 formatVisitPath : Locale -> List String -> String
 formatVisitPath locale path =

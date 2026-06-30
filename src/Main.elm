@@ -9,7 +9,7 @@ import Messages exposing (Msg(..), ItemMsg(..))
 import Locale exposing (Locale)
 import HttpError exposing (ResourceError(..), resourceErrorToString)
 import Veil exposing (loadContent, Page, Book, storyline)
-import Utils exposing (defaultConfig, bookUrl)
+import Utils exposing (defaultConfig, jsonUrl)
 import World exposing (initWorld, startPage)
 import Character exposing (initCharacter)
 import Engine exposing (applyPageVisit)
@@ -95,7 +95,7 @@ init _ =
         cfg = defaultConfig
     in
     ( Loading cfg.defaultLocale
-    , loadContent (bookUrl cfg) ContentLoaded
+    , loadContent (jsonUrl cfg) ContentLoaded
     )
 
 -- ------------------------------------------------------------------
