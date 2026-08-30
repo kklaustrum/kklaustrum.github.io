@@ -31,6 +31,8 @@ type alias Locale =
     , goingDeeperTxt : String
     , equip : String
     , stash : String
+    , equipLabel : String
+    , stashLabel : String
     , traits : String
     }
 
@@ -46,10 +48,10 @@ is =
     , httpNetworkError = "Netvilla"
     , httpBadStatus = "Ógild staða: %s"
     , httpBadBody = "Ekki hægt að lesa svar: %s"
-    , debugCurrentPagePrefix = "Núverandi"
+    , debugCurrentPagePrefix = "Staður"
     , debugCurrentPageVisits = "Heimsóknir"
-    , debugPathLabel = "Stígn"
-    , gameOver = "Ganga í hringi. Teldu þetta leik lokinn."
+    , debugPathLabel = "Leið"
+    , gameOver = "Þú gengur í hringi. Leiknum er lokið."
     , paramsLabel = "Gildi"
     , inventoryLabel = "Hlutir"
     , noItemsLabel = "Engar vörur"
@@ -64,7 +66,9 @@ is =
     , goingDeeperHeader = "Fara dýpar inn"
     , goingDeeperTxt = "Eitthvað svoleiðis."
     , equip = "Búnaður"
-    , stash = "Farangur"
+    , stash = "Geymsla"
+    , equipLabel = "Búna"
+    , stashLabel = "Geyma"
     , traits = "Þættir"
     }
 
@@ -99,5 +103,7 @@ en =
     , goingDeeperTxt = "Sort of."
     , equip = "Equip"
     , stash = "Stash"
+    , equipLabel = "Equip"
+    , stashLabel = "Stash"
     , traits = "Traits"
     }

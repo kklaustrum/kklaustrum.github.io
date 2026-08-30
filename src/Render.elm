@@ -88,7 +88,7 @@ renderItemPickup : UIContext -> String -> HtmlList
 renderItemPickup ui itemId =
     [ titleHtml ui.locale.inventoryLabel
     , paragraphNode (formatItemPickup ui.locale (Display.itemName itemId))
-    , itemChoiceButtons itemId
+    , itemChoiceButtons ui.locale itemId
     ]
 
 renderPageNotFound : UIContext -> GameContext -> HtmlList

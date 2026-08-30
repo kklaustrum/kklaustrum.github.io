@@ -228,9 +228,9 @@ errorTitleNode content = h1 [ class errorTitleCls ] [ textNode content ]
 gameOverNode : String -> Html msg
 gameOverNode content = p [ class gameOverCls ] [ textNode content ]
 
-itemChoiceButtons : String -> Html Msg
-itemChoiceButtons itemId =
+itemChoiceButtons : Locale -> String -> Html Msg
+itemChoiceButtons locale itemId =
     div [ class centeredChoiceCls ]
-        [ button [ onClick (Messages.equipItem itemId), class choiceBtnCls ] [ text "equip" ]
-        , button [ onClick (Messages.stashItem itemId), class choiceBtnCls ] [ text "stash" ]
+        [ button [ onClick (Messages.equipItem itemId), class choiceBtnCls ] [ text locale.equipLabel ]
+        , button [ onClick (Messages.stashItem itemId), class choiceBtnCls ] [ text locale.stashLabel ]
         ]
